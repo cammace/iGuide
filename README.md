@@ -3,20 +3,17 @@ iGuide is an Android application that allows for easy mapping within buildings. 
 only available for Android 5.0 and higher but may change in future.
 
 ##TODO
----
   * Finalize Highlevel Flowcharts 
   * Design First Version of User Interface
   * ~~Finish typing up README~~
  
 ##Versions
----
 #####Version 0.0.1:
   * Added files to Github
   * Created App Icon
   * Started Project
 
 ##Authors
----
   * Terrance Garr
   * Cameron Mace
   * Bryan Odenigwe
