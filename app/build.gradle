@@ -1,4 +1,3 @@
-
 apply plugin: 'com.android.application'
 
 android {
@@ -9,8 +8,8 @@ android {
         applicationId "team6.iguide"
         minSdkVersion 21
         targetSdkVersion 22
-        versionCode 1 // App version Google Play sees (Don't change till after launch)
-        versionName "0.0.1" // Version number users see
+        versionCode 1
+        versionName "1.0"
     }
     buildTypes {
         release {
@@ -22,6 +21,9 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:22.1.1' // added for the navigation drawer
-    //compile 'com.android.support:appcompat-v4:22.0.0'
+    compile('com.mapbox.mapboxsdk:mapbox-android-sdk:0.7.4@aar') {
+        transitive = true
+    }
+    compile 'com.android.support:design:22.2.0'
+    compile 'com.android.support:support-v4:22.2.0'
 }

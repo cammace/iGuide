@@ -1,99 +1,258 @@
 package team6.iguide;
 
-import android.app.Activity;
-
-import android.app.ActionBar;
-import android.app.Fragment;
-import android.app.FragmentManager;
+import android.app.SearchManager;
 import android.content.Context;
-import android.os.Build;
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.Gravity;
-import android.view.LayoutInflater;
+import android.preference.PreferenceFragment;
+import android.provider.SearchRecentSuggestions;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.support.v4.widget.DrawerLayout;
-import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.overlay.GpsLocationProvider;
+import com.mapbox.mapboxsdk.overlay.UserLocationOverlay;
+import com.mapbox.mapboxsdk.views.MapView;
+
+import java.lang.reflect.Field;
+
+public class MainActivity extends AppCompatActivity {
+
+    //Defining Variables
+    private Toolbar toolbar;
+    private NavigationView navigationView;
+    private DrawerLayout drawerLayout;
+    private MenuItem searchItem;
+    private SearchView searchView;
+    private SearchRecentSuggestions suggestions;
 
 
-public class MainActivity extends Activity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
-
-    /**
-     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-     */
-    private NavigationDrawerFragment mNavigationDrawerFragment;
-
-    /**
-     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
-     */
-    private CharSequence mTitle;
+    private UserLocationOverlay myLocationOverlay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Hide the Action Bar on top (We don't need it)
-        assert getActionBar() != null;
-        getActionBar().hide();
+        // Initializing Toolbar and setting it as the actionbar
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getFragmentManager().findFragmentById(R.id.navigation_drawer);
-        mTitle = getTitle();
 
-        // Set up the drawer.
-        mNavigationDrawerFragment.setUp(
-                R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
-    }
+        suggestions = new SearchRecentSuggestions(this, SearchSuggestion.AUTHORITY, SearchSuggestion.MODE);
 
-    @Override
-    public void onNavigationDrawerItemSelected(int position) {
-        // Update the main content by replacing fragments
-        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
-                .commit();
-    }
+        // Associate searchable configuration with the SearchView
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 
-    public void onSectionAttached(int number) {
-        switch (number) {
-            case 1:
-                mTitle = getString(R.string.title_section1);
-                break;
-            case 2:
-                mTitle = getString(R.string.title_section2);
-                break;
-            case 3:
-                mTitle = getString(R.string.title_section3);
-                break;
+
+        searchView = new SearchView(getSupportActionBar().getThemedContext());
+        searchView.setSearchableInfo(searchManager
+                .getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(true);
+        searchView.setQueryRefinementEnabled(true);
+        searchView.setMaxWidth(1000);
+
+
+        SearchView.SearchAutoComplete searchAutoComplete = (SearchView.SearchAutoComplete) searchView
+                .findViewById(android.support.v7.appcompat.R.id.search_src_text);
+
+        // Collapse the search menu when the user hits the back key
+        searchAutoComplete.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                //log.trace("onFocusChange(): " + hasFocus);
+                if (!hasFocus)
+                    showSearch(false);
+            }
+        });
+
+
+        // Creates TextView Cursor
+        try {
+            // This sets the cursor
+            // resource ID to 0 or @null
+            // which will make it visible
+            // on white background
+            Field mCursorDrawableRes = TextView.class
+                    .getDeclaredField("mCursorDrawableRes");
+
+            mCursorDrawableRes.setAccessible(true);
+            mCursorDrawableRes.set(searchAutoComplete, 0);
+
+        } catch (Exception e) {
         }
-    }
 
-    public void restoreActionBar() {
-        ActionBar actionBar = getActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(mTitle);
-    }
 
+        Intent intent = getIntent();
+
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+                    SearchSuggestion.AUTHORITY, SearchSuggestion.MODE);
+            suggestions.saveRecentQuery(query, null);
+        }
+
+
+        //Initializing NavigationView
+        navigationView = (NavigationView) findViewById(R.id.navigation_view);
+
+        //Setting Navigation View Item Selected Listener to handle the item click of the navigation menu
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+
+            // This method will trigger on item Click of navigation menu
+            @Override
+            public boolean onNavigationItemSelected(MenuItem menuItem) {
+
+
+                //Checking if the item is in checked state or not, if not make it in checked state
+                if (menuItem.isChecked()) menuItem.setChecked(false);
+                else menuItem.setChecked(true);
+
+                //Closing drawer on item click
+                //drawerLayout.closeDrawers();
+                Intent intent;
+                //Check to see which item was being clicked and perform appropriate action
+                switch (menuItem.getItemId()) {
+
+                    //Replacing the main content with ContentFragment Which is our Inbox View;
+                    case R.id.parking:
+                        drawerLayout.closeDrawers();
+                        Toast.makeText(getApplicationContext(), "Inbox Selected", Toast.LENGTH_SHORT).show();
+                        return true;
+
+                    // For rest of the options we just show a toast on click
+
+                    case R.id.food:
+                        drawerLayout.closeDrawers();
+                        Toast.makeText(getApplicationContext(), "Food", Toast.LENGTH_SHORT).show();
+                        return true;
+                    case R.id.store:
+                        drawerLayout.closeDrawers();
+                        Toast.makeText(getApplicationContext(), "Store", Toast.LENGTH_SHORT).show();
+                        return true;
+                    case R.id.settings:
+                        intent = new Intent(MainActivity.this, Settings.class);
+                        startActivity(intent);
+
+                        overridePendingTransition(R.anim.pull_in, R.anim.hold);
+
+                        return true;/*
+                    case R.id.allmail:
+                        Toast.makeText(getApplicationContext(),"All Mail Selected",Toast.LENGTH_SHORT).show();
+                        return true;
+                    case R.id.trash:
+                        Toast.makeText(getApplicationContext(),"Trash Selected",Toast.LENGTH_SHORT).show();
+                        return true;*/
+                    case R.id.help:
+                        Toast.makeText(getApplicationContext(), "Spam Selected", Toast.LENGTH_SHORT).show();
+                        Help fragment = new Help();
+                        android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        fragmentTransaction.replace(R.id.frame, fragment);
+                        fragmentTransaction.commit();
+                        return true;
+                    default:
+                        Toast.makeText(getApplicationContext(), "Somethings Wrong", Toast.LENGTH_SHORT).show();
+                        return true;
+
+                }
+            }
+        });
+
+        // Initializing Drawer Layout and ActionBarToggle
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
+        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.openDrawer, R.string.closeDrawer) {
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                // Code here will be triggered once the drawer closes as we dont want anything to happen so we leave this blank
+                super.onDrawerClosed(drawerView);
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                // Code here will be triggered once the drawer open as we dont want anything to happen so we leave this blank
+
+                super.onDrawerOpened(drawerView);
+            }
+        };
+
+        //Setting the actionbarToggle to drawer layout
+        drawerLayout.setDrawerListener(actionBarDrawerToggle);
+
+        //calling sync state is necessay or else your hamburger icon wont show up
+        actionBarDrawerToggle.syncState();
+
+
+        // Initialize MapView
+        setMap();
+
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (!mNavigationDrawerFragment.isDrawerOpen()) {
-            // Only show items in the action bar relevant to this screen
-            // if the drawer is not showing. Otherwise, let the drawer
-            // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.main, menu);
-            restoreActionBar();
-            return true;
-        }
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        searchItem = menu.add(android.R.string.search_go);
+/*
+        menu.add("One");
+        menu.add("Two");
+        menu.add("Three");
+*/
+        searchItem.setIcon(R.drawable.ic_search_white_24dp);
+
+        MenuItemCompat.setActionView(searchItem, searchView);
+
+        MenuItemCompat.setShowAsAction(searchItem,
+                MenuItemCompat.SHOW_AS_ACTION_ALWAYS
+                        | MenuItemCompat.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+
         return super.onCreateOptionsMenu(menu);
     }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        showSearch(false);
+        Bundle extras = intent.getExtras();
+        String userQuery = String.valueOf(extras.get(SearchManager.USER_QUERY));
+        String query = String.valueOf(extras.get(SearchManager.QUERY));
+
+        Toast.makeText(this, "query: " + query + " user_query: " + userQuery,
+                Toast.LENGTH_SHORT).show();
+    }
+
+    protected void showSearch(boolean visible) {
+        if (visible)
+            MenuItemCompat.expandActionView(searchItem);
+        else
+            MenuItemCompat.collapseActionView(searchItem);
+    }
+
+    /**
+     * Called when the hardware search button is pressed
+     */
+    @Override
+    public boolean onSearchRequested() {
+        showSearch(true);
+
+        // dont show the built-in search dialog
+        return false;
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -110,44 +269,21 @@ public class MainActivity extends Activity
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
+    public void setMap() {
+        MapView mv = (MapView) this.findViewById(R.id.mapview);
+        mv.setCenter(new LatLng(29.727, -95.342));
+        mv.setZoom(17);
 
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
+        myLocationOverlay = new UserLocationOverlay(new GpsLocationProvider(this), mv);
+        myLocationOverlay.enableMyLocation();
+        myLocationOverlay.setDrawAccuracyEnabled(true);
+        mv.getOverlays().add(myLocationOverlay);
 
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
-        }
-
-        @Override
-        public void onAttach(Activity activity) {
-            super.onAttach(activity);
-            ((MainActivity) activity).onSectionAttached(
-                    getArguments().getInt(ARG_SECTION_NUMBER));
-        }
+        /*
+        Marker marker = new Marker( "test", "test", new LatLng(29.727, -95.342));
+        marker.setMarker(getResources().getDrawable(R.drawable.test_marker));
+        //marker.setToolTip(new CustomInfoWindow(mv));
+        mv.addMarker(marker);
+        */
     }
-
 }
