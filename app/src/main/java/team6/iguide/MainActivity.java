@@ -1,6 +1,6 @@
 package team6.iguide;
 
-//Comment-Daniel has accessed the project file 7/23/15
+//Comment-Daniel has accessed the project file 7/23/15 to test a push
 
 import android.app.SearchManager;
 import android.content.Context;
