@@ -30,6 +30,15 @@
                 mapbox:mapid="cammace.mk9h5chi"
                 mapbox:accessToken="sk.eyJ1IjoiY2FtbWFjZSIsImEiOiI1MDYxZjA1MDc0YzhmOTRhZWFlODBlNGVlZDgzMTcxYSJ9.Ryw8G5toQp5yloce36hu2A"/>
 
+            <ImageButton
+                android:layout_margin="15dp"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:src="@drawable/ic_my_location_white_24dp"
+                android:background="@drawable/circle"
+                android:id="@+id/imageButton"
+                android:layout_gravity="right|bottom" />
+
         </FrameLayout>
 
     </LinearLayout>

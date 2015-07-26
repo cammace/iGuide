@@ -4,9 +4,9 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.PreferenceFragment;
 import android.provider.SearchRecentSuggestions;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -16,8 +16,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Defining Variables
     private Toolbar toolbar;
+    private ImageButton FAB;
     private NavigationView navigationView;
     private DrawerLayout drawerLayout;
     private MenuItem searchItem;
@@ -49,6 +49,16 @@ public class MainActivity extends AppCompatActivity {
         // Initializing Toolbar and setting it as the actionbar
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+
+        FAB = (ImageButton) findViewById(R.id.imageButton);
+        FAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO add this feature to map and fix button shadow bug
+                Toast.makeText(MainActivity.this,"Center User Location on Map",Toast.LENGTH_SHORT).show();
+            }
+        });
 
 
         suggestions = new SearchRecentSuggestions(this, SearchSuggestion.AUTHORITY, SearchSuggestion.MODE);
@@ -129,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
                     //Replacing the main content with ContentFragment Which is our Inbox View;
                     case R.id.parking:
                         drawerLayout.closeDrawers();
-                        Toast.makeText(getApplicationContext(), "Inbox Selected", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Parking", Toast.LENGTH_SHORT).show();
                         return true;
 
                     // For rest of the options we just show a toast on click
@@ -156,11 +166,14 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(),"Trash Selected",Toast.LENGTH_SHORT).show();
                         return true;*/
                     case R.id.help:
-                        Toast.makeText(getApplicationContext(), "Spam Selected", Toast.LENGTH_SHORT).show();
-                        Help fragment = new Help();
+                        drawerLayout.closeDrawers();
+
+                        DialogFragment newFragment = new Help();
+                        newFragment.show(getSupportFragmentManager(), "Help & Feedback");
+                       /* Help fragment = new Help();
                         android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                         fragmentTransaction.replace(R.id.frame, fragment);
-                        fragmentTransaction.commit();
+                        fragmentTransaction.commit();*/
                         return true;
                     default:
                         Toast.makeText(getApplicationContext(), "Somethings Wrong", Toast.LENGTH_SHORT).show();
@@ -262,10 +275,11 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
+        /*
         if (id == R.id.action_settings) {
             return true;
         }
-
+*/
         return super.onOptionsItemSelected(item);
     }
 

@@ -11,4 +11,17 @@
     <string name="search_hint">Room 101</string>
     <string name="settings">Settings</string>
     <string name="help">Help &amp; Feedback</string>
+
+
+
+
+    <!-- Help Dialog Fragment -->
+    <string name="get_help_title">Get help</string>
+    <string name="get_help_description">Contact us inorder to receive help on a specific issue you are having.</string>
+
+    <string name="report_map_issue_title">Report a map issue</string>
+    <string name="report_map_issue_description">Wrong building name, road missing, path in wrong place, etc.</string>
+
+    <string name="send_app_feedback_title">Send app feedback</string>
+    <string name="send_app_feedback_description">"Tell us what changes you'd like to see, or bugs you've discovered."</string>
 </resources>

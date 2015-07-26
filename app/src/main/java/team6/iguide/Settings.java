@@ -1,19 +1,11 @@
 package team6.iguide;
 
-import android.app.ActionBar;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.support.v4.app.NavUtils;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.View;
-import android.widget.LinearLayout;
 
 
 public class Settings extends AppCompatActivity {
@@ -28,6 +20,7 @@ public class Settings extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Makes status bar color same as PrimaryDarkColor
         getWindow().setStatusBarColor(getResources().getColor(R.color.PrimaryDarkColor));
 
         // Adds back button to toolbar
