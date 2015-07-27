@@ -1,10 +1,9 @@
 package team6.iguide;
 
-//Comment-Daniel has accessed the project file 7/23/15 to test a push
-
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.design.widget.NavigationView;
@@ -24,6 +23,7 @@ import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.GpsLocationProvider;
+import com.mapbox.mapboxsdk.overlay.PathOverlay;
 import com.mapbox.mapboxsdk.overlay.UserLocationOverlay;
 import com.mapbox.mapboxsdk.views.MapView;
 
@@ -287,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void setMap() {
         MapView mv = (MapView) this.findViewById(R.id.mapview);
-        mv.setCenter(new LatLng(29.727, -95.342));
+        mv.setCenter(new LatLng(29.7199489, -95.3422334));
         mv.setZoom(17);
 
         myLocationOverlay = new UserLocationOverlay(new GpsLocationProvider(this), mv);
