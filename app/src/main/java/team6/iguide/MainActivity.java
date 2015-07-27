@@ -3,7 +3,6 @@ package team6.iguide;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.design.widget.NavigationView;
@@ -23,7 +22,6 @@ import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.GpsLocationProvider;
-import com.mapbox.mapboxsdk.overlay.PathOverlay;
 import com.mapbox.mapboxsdk.overlay.UserLocationOverlay;
 import com.mapbox.mapboxsdk.views.MapView;
 
@@ -58,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // TODO add this feature to map and fix button shadow bug
-                Toast.makeText(MainActivity.this,"Center User Location on Map",Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Center User Location on Map", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -143,9 +141,10 @@ public class MainActivity extends AppCompatActivity {
                         drawerLayout.closeDrawers();
                         Toast.makeText(getApplicationContext(), "Parking", Toast.LENGTH_SHORT).show();
                         return true;
-
-                    // For rest of the options we just show a toast on click
-
+                    case R.id.transit:
+                        drawerLayout.closeDrawers();
+                        Toast.makeText(getApplicationContext(),"Transit",Toast.LENGTH_SHORT).show();
+                        return true;
                     case R.id.food:
                         drawerLayout.closeDrawers();
                         Toast.makeText(getApplicationContext(), "Food", Toast.LENGTH_SHORT).show();
@@ -289,6 +288,10 @@ public class MainActivity extends AppCompatActivity {
         MapView mv = (MapView) this.findViewById(R.id.mapview);
         mv.setCenter(new LatLng(29.7199489, -95.3422334));
         mv.setZoom(17);
+
+        // Uncomment line below to enable map rotation
+        // Disabled because text on map doesn't rotate
+        //mv.setMapRotationEnabled(true);
 
         myLocationOverlay = new UserLocationOverlay(new GpsLocationProvider(this), mv);
         myLocationOverlay.enableMyLocation();

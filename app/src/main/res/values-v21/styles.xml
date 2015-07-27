@@ -5,6 +5,17 @@
         <item name="android:colorPrimary">@color/PrimaryColor</item>
         <item name="android:colorPrimaryDark">@color/PrimaryDarkColor</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:dropDownItemStyle">@style/searchSuggestionStyle</item>
         <!-- Customize your theme here. -->
+    </style>
+
+
+    <style name="searchSuggestionStyle" parent="android:Theme.Material">
+
+        <!--
+        <item name="android:textColor">@color/secondary_text_default_material_light</item>
+         Layout for query suggestion rows -->
+        <item name="suggestionRowLayout">@layout/abc_search_dropdown_item_icons_2line</item>
+
     </style>
 </resources>

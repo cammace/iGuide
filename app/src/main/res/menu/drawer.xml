@@ -10,6 +10,12 @@
             android:title="@string/parking" />
 
         <item
+            android:id="@+id/transit"
+            android:checked="false"
+            android:icon="@drawable/ic_directions_bus_black_24dp"
+            android:title="@string/transit" />
+
+        <item
             android:id="@+id/food"
             android:checked="false"
             android:icon="@drawable/ic_restaurant_menu_black_24dp"

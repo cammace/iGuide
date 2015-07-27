@@ -76,3 +76,24 @@ public class Settings extends AppCompatActivity {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+TODO add this code to allow user to clear search history
+SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+        HelloSuggestionProvider.AUTHORITY, HelloSuggestionProvider.MODE);
+suggestions.clearHistory();
+
+
+ */
