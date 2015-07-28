@@ -11,7 +11,7 @@ import android.view.View;
 public class Settings extends AppCompatActivity {
 
     private Toolbar toolbar;
-
+    // TODO Fix settings animation
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,6 +33,26 @@ public class Settings extends AppCompatActivity {
                 overridePendingTransition(R.anim.pull_out, R.anim.hold);
             }
         });
+
+        // Clear search history
+        /*
+        SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+        HelloSuggestionProvider.AUTHORITY, HelloSuggestionProvider.MODE);
+        suggestions.clearHistory();
+         */
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
         LinearLayout root = (LinearLayout)findViewById(android.R.id.list).getParent().getParent().getParent();

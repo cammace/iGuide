@@ -14,8 +14,10 @@
     <string name="transit">Transit</string>
 
 
-
     <!-- Help Dialog Fragment -->
+    <string name="about_title">About</string>
+    <string name="about_description">List of credit and references, as well as, disclaimer and thanks.</string>
+
     <string name="get_help_title">Get help</string>
     <string name="get_help_description">Contact us inorder to receive help on a specific issue you are having.</string>
 

@@ -1,144 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <include
         android:id="@+id/toolbar"
         layout="@layout/tool_bar" />
 
-    <LinearLayout
-        android:id="@+id/help"
+
+    <ListView
+        android:id="@+id/menu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/toolbar"
-        android:layout_centerHorizontal="true"
-        android:orientation="horizontal"
-        android:paddingLeft="60dp"
-        android:paddingRight="60dp"
-        android:paddingTop="8dp">
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:paddingTop="8dp" />
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:src="@drawable/ic_help_black_24dp"
-            android:tint="#727272" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingBottom="2dp"
-                android:paddingLeft="16dp"
-                android:paddingTop="20dp"
-                android:singleLine="true"
-                android:text="@string/get_help_title"
-                android:textColor="@color/black"
-                android:textSize="16sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="16dp"
-                android:paddingTop="2dp"
-                android:text="@string/get_help_description"
-                android:textColor="#727272"
-                android:textSize="14sp" />
-        </LinearLayout>
-    </LinearLayout>
-
-
-    <LinearLayout
-        android:id="@+id/mapissue"
+    <Space
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/help"
-        android:layout_centerHorizontal="true"
-        android:clickable="true"
-        android:orientation="horizontal"
-        android:paddingLeft="60dp"
-        android:paddingRight="60dp">
+        android:layout_height="8dp" />
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:src="@drawable/ic_map_black_24dp"
-            android:tint="#727272" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingBottom="2dp"
-                android:paddingLeft="16dp"
-                android:paddingTop="20dp"
-                android:singleLine="true"
-                android:text="@string/report_map_issue_title"
-                android:textColor="@color/black"
-                android:textSize="16sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="16dp"
-                android:paddingTop="2dp"
-                android:text="@string/report_map_issue_description"
-                android:textColor="#727272"
-                android:textSize="14sp" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/appfeedback"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/mapissue"
-        android:layout_centerHorizontal="true"
-        android:orientation="horizontal"
-        android:paddingLeft="60dp"
-        android:paddingRight="60dp">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:src="@drawable/ic_feedback_black_24dp"
-            android:tint="#727272" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingBottom="2dp"
-                android:paddingLeft="16dp"
-                android:paddingTop="20dp"
-                android:singleLine="true"
-                android:text="@string/send_app_feedback_title"
-                android:textColor="@color/black"
-                android:textSize="16sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingBottom="28dp"
-                android:paddingLeft="16dp"
-                android:paddingTop="2dp"
-                android:text="@string/send_app_feedback_description"
-                android:textColor="#727272"
-                android:textSize="14sp" />
-        </LinearLayout>
-    </LinearLayout>
-
-
-</RelativeLayout>
+</LinearLayout>

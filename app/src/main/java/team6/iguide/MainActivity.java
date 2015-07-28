@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.view.MenuItemCompat;
@@ -29,14 +30,17 @@ import java.lang.reflect.Field;
 
 public class MainActivity extends AppCompatActivity {
 
+
+    //TODO make map tiles offline
     //Defining Variables
     private Toolbar toolbar;
-    private ImageButton FAB;
+    private FloatingActionButton FAB;
     private NavigationView navigationView;
     private DrawerLayout drawerLayout;
     private MenuItem searchItem;
     private SearchView searchView;
     private SearchRecentSuggestions suggestions;
+    private MapView mv;
 
 
     private UserLocationOverlay myLocationOverlay;
@@ -50,15 +54,22 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
-        FAB = (ImageButton) findViewById(R.id.imageButton);
+        // FAB for myLocationButton
+        FAB = (FloatingActionButton) findViewById(R.id.myLocationButton);
         FAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO add this feature to map and fix button shadow bug
-                Toast.makeText(MainActivity.this, "Center User Location on Map", Toast.LENGTH_SHORT).show();
+
+                //mv.getController().animateTo();
+
+                //mv.setUserLocationRequiredZoom(mv.getZoomLevel());
+                mv.goToUserLocation(true);
             }
         });
+
+
+
+
 
 
         suggestions = new SearchRecentSuggestions(this, SearchSuggestion.AUTHORITY, SearchSuggestion.MODE);
@@ -169,8 +180,8 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.help:
                         drawerLayout.closeDrawers();
 
-                        DialogFragment newFragment = new Help();
-                        newFragment.show(getSupportFragmentManager(), "Help & Feedback");
+                        DialogFragment newFragmentHelp = new Help();
+                        newFragmentHelp.show(getSupportFragmentManager(), "Help & Feedback");
                        /* Help fragment = new Help();
                         android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                         fragmentTransaction.replace(R.id.frame, fragment);
@@ -285,9 +296,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setMap() {
-        MapView mv = (MapView) this.findViewById(R.id.mapview);
+        mv = (MapView) this.findViewById(R.id.mapview);
         mv.setCenter(new LatLng(29.7199489, -95.3422334));
         mv.setZoom(17);
+        mv.setUserLocationEnabled(true);
 
         // Uncomment line below to enable map rotation
         // Disabled because text on map doesn't rotate
@@ -304,5 +316,18 @@ public class MainActivity extends AppCompatActivity {
         //marker.setToolTip(new CustomInfoWindow(mv));
         mv.addMarker(marker);
         */
+    }
+
+    //TODO Fix so that when app is closed it stops getting user location
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mv.getUserLocationOverlay().enableMyLocation();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mv.getUserLocationOverlay().disableMyLocation();
     }
 }

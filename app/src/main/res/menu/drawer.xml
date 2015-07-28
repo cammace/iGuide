@@ -66,5 +66,6 @@
             android:checked="false"
             android:icon="@drawable/ic_help_black_24dp"
             android:title="@string/help" />
+
     </group>
 </menu>

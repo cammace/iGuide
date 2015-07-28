@@ -6,6 +6,7 @@
         <item name="android:colorPrimaryDark">@color/PrimaryDarkColor</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:dropDownItemStyle">@style/searchSuggestionStyle</item>
+        <item name="colorAccent">@color/PrimaryColor</item>
         <!-- Customize your theme here. -->
     </style>
 
