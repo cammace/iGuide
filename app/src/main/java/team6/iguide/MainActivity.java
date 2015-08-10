@@ -17,10 +17,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.GpsLocationProvider;
 import com.mapbox.mapboxsdk.overlay.UserLocationOverlay;
@@ -30,8 +30,6 @@ import java.lang.reflect.Field;
 
 public class MainActivity extends AppCompatActivity {
 
-
-    //TODO make map tiles offline
     //Defining Variables
     private Toolbar toolbar;
     private FloatingActionButton FAB;
@@ -296,10 +294,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setMap() {
+
         mv = (MapView) this.findViewById(R.id.mapview);
         mv.setCenter(new LatLng(29.7199489, -95.3422334));
         mv.setZoom(17);
         mv.setUserLocationEnabled(true);
+
+        BoundingBox scrollLimit = new BoundingBox(29.731896194504913, -95.31928449869156, 29.709354854765827, -95.35668790340424);
+        mv.setScrollableAreaLimit(scrollLimit);
+        mv.setMinZoomLevel(16);
 
         // Uncomment line below to enable map rotation
         // Disabled because text on map doesn't rotate
