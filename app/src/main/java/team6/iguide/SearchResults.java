@@ -7,6 +7,7 @@ import android.app.SearchManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.widget.TextView;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -22,38 +23,34 @@ public class SearchResults extends Activity{
     private RequestQueue mRequestQueue;
     String myUrl;
     String boundBox = "&viewbox=-95.35668790340424,29.731896194504913,-95.31928449869156,29.709354854765827&bounded=1";
-    public String jason;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.search);
+
+        // Set content view is temporary just to show search output
+        setContentView(R.layout.search_temp);
 
         // Get the intent, verify the action and get the query
         Intent intent = getIntent();
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            doMySearch(query);
+            createURI(query);
+
+            mRequestQueue = Volley.newRequestQueue(this);
+            fetchJsonResponse();
         }
     }
 
-    public void doMySearch(String query){
+    public void createURI(String query){
         Uri.Builder builder = new Uri.Builder();
         builder.scheme("http")
                 .authority("nominatim.openstreetmap.org")
                 .appendPath("search")
-                .appendQueryParameter("q", query.replace(" ", "_"))
+                .appendQueryParameter("q", query.replace(" ", "."))
                 .appendQueryParameter("format", "json");
         myUrl = builder.build().toString();
         myUrl = myUrl + boundBox;
-
-        //System.out.println(myUrl);
-        //Toast.makeText(getApplicationContext(), myUrl, Toast.LENGTH_SHORT).show();
-
-        mRequestQueue = Volley.newRequestQueue(this);
-        fetchJsonResponse();
-        System.out.println(jason);
-
     }
 
     private void fetchJsonResponse() {
@@ -63,17 +60,12 @@ public class SearchResults extends Activity{
             @Override
             public void onResponse(JSONArray response) {
 
-                //System.out.println(response);
-
                 Gson gson = new Gson();
                 String nominatimData = response.toString();
                 NominatimModel[] cam = gson.fromJson(nominatimData, NominatimModel[].class);
 
-                jason = cam[0].getLat();
-
-
-
-                //System.out.println(gson.toJson(cam));
+                TextView searchOutput = (TextView)findViewById(R.id.searchResult);
+                searchOutput.setText("Total Results= " + cam.length + "\nlat= " + cam[0].getLat() + "\nlon= " + cam[0].getLon());
 
             }
         }, new Response.ErrorListener() {
