@@ -44,6 +44,10 @@
                 app:pressedTranslationZ="12dp"
                 app:fabSize="normal" />
 
+            <FrameLayout
+                android:id="@+id/place_info"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
 
         </FrameLayout>

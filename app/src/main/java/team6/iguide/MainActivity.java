@@ -1,8 +1,11 @@
 package team6.iguide;
 
+import android.support.v4.app.FragmentActivity;
+import android.app.FragmentManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.design.widget.FloatingActionButton;
@@ -20,13 +23,20 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.mapbox.mapboxsdk.api.ILatLng;
 import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.GpsLocationProvider;
+import com.mapbox.mapboxsdk.overlay.MapEventsOverlay;
+import com.mapbox.mapboxsdk.overlay.MapEventsReceiver;
 import com.mapbox.mapboxsdk.overlay.UserLocationOverlay;
 import com.mapbox.mapboxsdk.views.MapView;
 
 import java.lang.reflect.Field;
+
+// http://stackoverflow.com/questions/20610253/how-to-enable-longclick-on-map-with-osmdroid-in-supportmapfragment
+
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,6 +50,10 @@ public class MainActivity extends AppCompatActivity {
     private SearchRecentSuggestions suggestions;
     private MapView mv;
 
+    private boolean isOnClick;
+    private float mDownX;
+    private float mDownY;
+    private final float SCROLL_THRESHOLD = 10;
 
     private UserLocationOverlay myLocationOverlay;
 
@@ -304,9 +318,63 @@ public class MainActivity extends AppCompatActivity {
         mv.setScrollableAreaLimit(scrollLimit);
         mv.setMinZoomLevel(16);
 
+
         // Uncomment line below to enable map rotation
         // Disabled because text on map doesn't rotate
         //mv.setMapRotationEnabled(true);
+
+
+        MapEventsReceiver mReceive = new MapEventsReceiver() {
+            @Override
+            public boolean singleTapUpHelper(ILatLng pressLatLon) {
+                // Convert pressed latitude and longitude to string for URI
+                String latitude = Double.toString(pressLatLon.getLatitude());
+                String longitude = Double.toString(pressLatLon.getLongitude());
+
+                // Build the Nominatim URI
+                String myGeocodeURI;
+                String GeocodeBoundBox = "&viewbox=-95.35668790340424,29.731896194504913,-95.31928449869156,29.709354854765827&bounded=1";
+
+                Uri.Builder builder = new Uri.Builder();
+                builder.scheme("http")
+                        .authority("nominatim.openstreetmap.org")
+                        .appendPath("reverse")
+                        .appendQueryParameter("lat", latitude)
+                        .appendQueryParameter("lon", longitude)
+                        .appendQueryParameter("format", "json");
+                myGeocodeURI = builder.build().toString();
+                // myGeocodeURI = myGeocodeURI + GeocodeBoundBox;
+
+                System.out.println(myGeocodeURI);
+/*
+                // Create a new Fragment to be placed in the activity layout
+                PlaceInfoFragment placeInfo = new PlaceInfoFragment();
+
+                // In case this activity was started with special instructions from an
+                // Intent, pass the Intent's extras to the fragment as arguments
+                placeInfo.setArguments(getIntent().getExtras());
+
+                // Add the fragment to the 'fragment_container' FrameLayout
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.place_info, placeInfo).commit();
+*/
+
+
+                return true;
+            }
+
+            @Override
+            public boolean longPressHelper(ILatLng pressLatLon) {
+
+                // TODO long press will give user immediate route results
+                System.out.println("Long press");
+
+                return true;
+            }
+        };
+
+        MapEventsOverlay gestureOverlay = new MapEventsOverlay(this, mReceive);
+        mv.getOverlays().add(gestureOverlay);
 
         myLocationOverlay = new UserLocationOverlay(new GpsLocationProvider(this), mv);
         myLocationOverlay.enableMyLocation();

@@ -23,6 +23,7 @@ public class SearchResults extends Activity{
     private RequestQueue mRequestQueue;
     String myUrl;
     String boundBox = "&viewbox=-95.35668790340424,29.731896194504913,-95.31928449869156,29.709354854765827&bounded=1";
+    NominatimModel[] cam;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -35,10 +36,14 @@ public class SearchResults extends Activity{
         Intent intent = getIntent();
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            createURI(query);
 
-            mRequestQueue = Volley.newRequestQueue(this);
+            createURI(query);
+            mRequestQueue = Volley.newRequestQueue(this);   // Create queue for volley
             fetchJsonResponse();
+
+            //
+            //System.out.println(cam[0].getLat());
+
         }
     }
 
@@ -49,6 +54,8 @@ public class SearchResults extends Activity{
                 .appendPath("search")
                 .appendQueryParameter("q", query.replace(" ", "."))
                 .appendQueryParameter("format", "json");
+                //.appendQueryParameter("viewbox", "-95.35668790340424,29.731896194504913,-95.31928449869156,29.709354854765827")
+                //.appendQueryParameter("bounded", "1");
         myUrl = builder.build().toString();
         myUrl = myUrl + boundBox;
     }
@@ -62,10 +69,13 @@ public class SearchResults extends Activity{
 
                 Gson gson = new Gson();
                 String nominatimData = response.toString();
-                NominatimModel[] cam = gson.fromJson(nominatimData, NominatimModel[].class);
+                cam = gson.fromJson(nominatimData, NominatimModel[].class);
 
-                TextView searchOutput = (TextView)findViewById(R.id.searchResult);
-                searchOutput.setText("Total Results= " + cam.length + "\nlat= " + cam[0].getLat() + "\nlon= " + cam[0].getLon());
+                //TextView searchOutput = (TextView)findViewById(R.id.searchResult);
+                //searchOutput.setText("Total Results= " + cam.length + "\nlat= " + cam[0].getLat() + "\nlon= " + cam[0].getLon());
+
+                // This output works just as expected however if moved outside onResponse the app will crash.
+                // System.out.println(cam[0].getLat());
 
             }
         }, new Response.ErrorListener() {
