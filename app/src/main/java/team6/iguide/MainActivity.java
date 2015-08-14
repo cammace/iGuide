@@ -1,5 +1,7 @@
 package team6.iguide;
 
+import android.app.ActionBar;
+import android.app.FragmentTransaction;
 import android.support.v4.app.FragmentActivity;
 import android.app.FragmentManager;
 import android.app.SearchManager;
@@ -20,6 +22,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -347,6 +353,44 @@ public class MainActivity extends AppCompatActivity {
 
                 System.out.println(myGeocodeURI);
 /*
+                FrameLayout layout = (FrameLayout)findViewById(R.id.map_container);
+                ViewGroup.LayoutParams params = layout.getLayoutParams();
+
+                params.height= 500;
+
+*/
+
+                FragmentManager fragmentManager = getFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+
+                PlaceInfoFragment fragment = new PlaceInfoFragment();
+                //fragmentTransaction.setCustomAnimations(R.anim.bottom_up, R.anim.left_out);
+                fragmentTransaction.add(R.id.place_info, fragment, "Detailed Info");
+                fragmentTransaction.commit();
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+
+                PlaceInfoFragment blah = new PlaceInfoFragment();
+                android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.frame, blah);
+                fragmentTransaction.commit();
+
+
+
+
                 // Create a new Fragment to be placed in the activity layout
                 PlaceInfoFragment placeInfo = new PlaceInfoFragment();
 

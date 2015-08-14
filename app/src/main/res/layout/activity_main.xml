@@ -8,7 +8,7 @@
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:orientation="vertical"
@@ -19,9 +19,11 @@
             />
 
         <FrameLayout
-            android:id="@+id/frame"
+            android:id="@+id/map_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true">
+
 
             <com.mapbox.mapboxsdk.views.MapView
                 android:id="@+id/mapview"
@@ -44,15 +46,16 @@
                 app:pressedTranslationZ="12dp"
                 app:fabSize="normal" />
 
-            <FrameLayout
-                android:id="@+id/place_info"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-
         </FrameLayout>
 
-    </LinearLayout>
+        <FrameLayout
+            android:id="@+id/place_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            />
+
+    </RelativeLayout>
 
     <android.support.design.widget.NavigationView
         android:id="@+id/navigation_view"
