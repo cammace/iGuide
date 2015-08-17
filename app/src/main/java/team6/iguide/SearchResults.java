@@ -7,6 +7,7 @@ import android.app.SearchManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.widget.TextView;
 
 import com.android.volley.RequestQueue;
@@ -18,12 +19,12 @@ import com.google.gson.Gson;
 
 import org.json.JSONArray;
 
-public class SearchResults extends Activity{
+import java.io.Serializable;
+
+public class SearchResults extends Activity {
 
     private RequestQueue mRequestQueue;
     String myUrl;
-    String boundBox = "&viewbox=-95.35668790340424,29.731896194504913,-95.31928449869156,29.709354854765827&bounded=1";
-    NominatimModel[] cam;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -34,30 +35,27 @@ public class SearchResults extends Activity{
 
         // Get the intent, verify the action and get the query
         Intent intent = getIntent();
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String query = intent.getStringExtra(SearchManager.QUERY);
 
-            createURI(query);
-            mRequestQueue = Volley.newRequestQueue(this);   // Create queue for volley
-            fetchJsonResponse();
+        // Get the search query
+        String query = intent.getStringExtra(SearchManager.QUERY);
 
-            //
-            //System.out.println(cam[0].getLat());
+        createURI(query);
+        mRequestQueue = Volley.newRequestQueue(this);   // Create queue for volley
+        fetchJsonResponse();
 
-        }
+
     }
 
-    public void createURI(String query){
+    public void createURI(String query) {
         Uri.Builder builder = new Uri.Builder();
         builder.scheme("http")
                 .authority("nominatim.openstreetmap.org")
                 .appendPath("search")
                 .appendQueryParameter("q", query.replace(" ", "."))
-                .appendQueryParameter("format", "json");
-                //.appendQueryParameter("viewbox", "-95.35668790340424,29.731896194504913,-95.31928449869156,29.709354854765827")
-                //.appendQueryParameter("bounded", "1");
+                .appendQueryParameter("format", "json")
+                .appendQueryParameter("viewbox", "-95.35668790340424,29.731896194504913,-95.31928449869156,29.709354854765827")
+                .appendQueryParameter("bounded", "1");
         myUrl = builder.build().toString();
-        myUrl = myUrl + boundBox;
     }
 
     private void fetchJsonResponse() {
@@ -69,14 +67,16 @@ public class SearchResults extends Activity{
 
                 Gson gson = new Gson();
                 String nominatimData = response.toString();
-                cam = gson.fromJson(nominatimData, NominatimModel[].class);
+                NominatimModel[] cam = gson.fromJson(nominatimData, NominatimModel[].class);
 
-                //TextView searchOutput = (TextView)findViewById(R.id.searchResult);
-                //searchOutput.setText("Total Results= " + cam.length + "\nlat= " + cam[0].getLat() + "\nlon= " + cam[0].getLon());
-
-                // This output works just as expected however if moved outside onResponse the app will crash.
-                // System.out.println(cam[0].getLat());
-
+                Intent resultIntent = new Intent();
+                //resultIntent.putExtra("CAM", cam[0].getLat());
+                Bundle bundle = new Bundle();
+                bundle.putString("LAT", cam[0].getLat());
+                bundle.putString("LON", cam[0].getLon());
+                resultIntent.putExtras(bundle);
+                setResult(Activity.RESULT_OK, resultIntent);
+                finish();
             }
         }, new Response.ErrorListener() {
 
@@ -88,8 +88,4 @@ public class SearchResults extends Activity{
         });
         mRequestQueue.add(req);
     }
-
-
-
-
 }

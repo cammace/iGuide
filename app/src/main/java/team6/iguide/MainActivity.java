@@ -1,13 +1,10 @@
 package team6.iguide;
 
-import android.app.ActionBar;
-import android.app.FragmentTransaction;
-import android.support.v4.app.FragmentActivity;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.design.widget.FloatingActionButton;
@@ -22,10 +19,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,12 +28,17 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.GpsLocationProvider;
 import com.mapbox.mapboxsdk.overlay.MapEventsOverlay;
 import com.mapbox.mapboxsdk.overlay.MapEventsReceiver;
+import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.overlay.UserLocationOverlay;
 import com.mapbox.mapboxsdk.views.MapView;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 // http://stackoverflow.com/questions/20610253/how-to-enable-longclick-on-map-with-osmdroid-in-supportmapfragment
+
+// This helped solve search issues:
+// http://blog.dpdearing.com/2011/05/getting-android-to-call-onactivityresult-after-onsearchrequested/
 
 
 
@@ -250,11 +248,7 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
         searchItem = menu.add(android.R.string.search_go);
-/*
-        menu.add("One");
-        menu.add("Two");
-        menu.add("Three");
-*/
+
         searchItem.setIcon(R.drawable.ic_search_white_24dp);
 
         MenuItemCompat.setActionView(searchItem, searchView);
@@ -269,13 +263,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        showSearch(false);
-        Bundle extras = intent.getExtras();
-        String userQuery = String.valueOf(extras.get(SearchManager.USER_QUERY));
-        String query = String.valueOf(extras.get(SearchManager.QUERY));
 
-        Toast.makeText(this, "query: " + query + " user_query: " + userQuery,
-                Toast.LENGTH_SHORT).show();
+        handleIntent(intent);
+
+        showSearch(false);
     }
 
     protected void showSearch(boolean visible) {
@@ -283,17 +274,6 @@ public class MainActivity extends AppCompatActivity {
             MenuItemCompat.expandActionView(searchItem);
         else
             MenuItemCompat.collapseActionView(searchItem);
-    }
-
-    /**
-     * Called when the hardware search button is pressed
-     */
-    @Override
-    public boolean onSearchRequested() {
-        showSearch(true);
-
-        // dont show the built-in search dialog
-        return false;
     }
 
 
@@ -337,46 +317,22 @@ public class MainActivity extends AppCompatActivity {
                 String latitude = Double.toString(pressLatLon.getLatitude());
                 String longitude = Double.toString(pressLatLon.getLongitude());
 
-                // Build the Nominatim URI
-                String myGeocodeURI;
-                String GeocodeBoundBox = "&viewbox=-95.35668790340424,29.731896194504913,-95.31928449869156,29.709354854765827&bounded=1";
 
-                Uri.Builder builder = new Uri.Builder();
-                builder.scheme("http")
-                        .authority("nominatim.openstreetmap.org")
-                        .appendPath("reverse")
-                        .appendQueryParameter("lat", latitude)
-                        .appendQueryParameter("lon", longitude)
-                        .appendQueryParameter("format", "json");
-                myGeocodeURI = builder.build().toString();
-                // myGeocodeURI = myGeocodeURI + GeocodeBoundBox;
 
-                System.out.println(myGeocodeURI);
-/*
-                FrameLayout layout = (FrameLayout)findViewById(R.id.map_container);
-                ViewGroup.LayoutParams params = layout.getLayoutParams();
-
-                params.height= 500;
-
-*/
 
                 FragmentManager fragmentManager = getFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
 
-                PlaceInfoFragment fragment = new PlaceInfoFragment();
+                PlaceInfoFragment placeInfo = new PlaceInfoFragment();
                 //fragmentTransaction.setCustomAnimations(R.anim.bottom_up, R.anim.left_out);
-                fragmentTransaction.add(R.id.place_info, fragment, "Detailed Info");
+                Bundle latlon = new Bundle();
+                latlon.putString("LAT", latitude);
+                latlon.putString("LON", longitude);
+                placeInfo.setArguments(latlon);
+                //placeInfo.setArguments(getIntent().getExtras());
+                fragmentTransaction.add(R.id.place_info, placeInfo, "Detailed Info");
                 fragmentTransaction.commit();
-
-
-
-
-
-
-
-
-
 
 
 /*
@@ -431,6 +387,37 @@ public class MainActivity extends AppCompatActivity {
         //marker.setToolTip(new CustomInfoWindow(mv));
         mv.addMarker(marker);
         */
+    }
+
+    private void handleIntent(Intent intent){
+        // Get the intent, verify the action and get the query
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            // manually launch the real search activity
+            final Intent searchIntent = new Intent(getApplicationContext(),
+                    SearchResults.class);
+            // add query to the Intent Extras
+            searchIntent.putExtra(SearchManager.QUERY, query);
+            startActivityForResult(searchIntent, 222);
+        }
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(requestCode == 222){
+            if(resultCode == RESULT_OK){
+                //NominatimModel[] value = (NominatimModel[]) data.getExtras().getSerializable("CAM");
+                //if(value != null) {
+                //    System.out.println(value[0].getLat());
+               // }
+                String latResult = data.getExtras().getString("LAT");
+                String lonResult = data.getExtras().getString("LON");
+                System.out.println("lat: " + latResult + " lon: " + lonResult);
+                double q = Double.parseDouble(latResult);
+                double b = Double.parseDouble(lonResult);
+                Marker marker = new Marker( "test", "test", new LatLng(q, b));
+                mv.addMarker(marker);
+            }
+        }
     }
 
     //TODO Fix so that when app is closed it stops getting user location
