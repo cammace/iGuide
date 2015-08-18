@@ -5,7 +5,8 @@
     android:hint="@string/search_hint"
     android:searchSuggestAuthority="team6.iguide.SearchSuggestion"
     android:searchSuggestSelection=" ?"
-    android:voiceSearchMode="showVoiceSearchButton|launchRecognizer"/>
+    android:voiceSearchMode="showVoiceSearchButton|launchRecognizer"
+    android:imeOptions="actionSearch" />
 
 
 

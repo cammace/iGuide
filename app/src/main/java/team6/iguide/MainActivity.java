@@ -32,6 +32,7 @@ import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.overlay.UserLocationOverlay;
 import com.mapbox.mapboxsdk.views.MapView;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -405,17 +406,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         if(requestCode == 222){
             if(resultCode == RESULT_OK){
-                //NominatimModel[] value = (NominatimModel[]) data.getExtras().getSerializable("CAM");
-                //if(value != null) {
-                //    System.out.println(value[0].getLat());
-               // }
-                String latResult = data.getExtras().getString("LAT");
-                String lonResult = data.getExtras().getString("LON");
-                System.out.println("lat: " + latResult + " lon: " + lonResult);
-                double q = Double.parseDouble(latResult);
-                double b = Double.parseDouble(lonResult);
-                Marker marker = new Marker( "test", "test", new LatLng(q, b));
-                mv.addMarker(marker);
+
+                Bundle n = data.getExtras();
+                Serializable x = n.getSerializable("CAM");
+                NominatimModel[] z = ((NominatimModel[]) x);
+
+                mv.clear();
+
+                for(int i=0; i<z.length; i++){
+                    double q = Double.parseDouble(z[i].getLat());
+                    double b = Double.parseDouble(z[i].getLon());
+                    Marker marker = new Marker( z[i].getDisplayName(), "Description", new LatLng(q, b));
+                    mv.addMarker(marker);
+                }
+
             }
         }
     }

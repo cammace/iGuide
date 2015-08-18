@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="team6.iguide" >
 
+    <!-- TODO Update user permissions to Android M -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -14,6 +15,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+        <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -24,41 +26,20 @@
                 <action android:name="android.intent.action.SEARCH" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-            <meta-data android:name="android.app.searchable"
-                android:resource="@xml/searchable"/>
-
             <meta-data
-                android:name="android.app.default_searchable"
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable"
                 android:value=".MainActivity" />
         </activity>
 
-        <activity
-            android:name=".SearchResults"
-            android:label="@string/app_name" >
-
-            <!-- This intent-filter identifies this activity as "searchable" -->
-
-            <intent-filter>
-                <action android:name="android.intent.action.SEARCH" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-
-            <!-- This metadata entry provides further configuration details for searches -->
-            <!-- that are handled by this activity. -->
-
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
-        </activity>
-
-
         <provider
             android:name=".SearchSuggestion"
-            android:authorities="team6.iguide.SearchSuggestion" >
-        </provider>
+            android:authorities="team6.iguide.SearchSuggestion" />
 
+        <!-- Search Results Activity-->
+        <activity android:name=".SearchResults" />
+
+        <!-- Settings Activity -->
         <activity
             android:name=".Settings"
             android:label="@string/title_activity_settings"
@@ -68,5 +49,4 @@
                 android:value="team6.iguide.MainActivity" />
         </activity>
     </application>
-
 </manifest>

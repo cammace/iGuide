@@ -72,8 +72,11 @@ public class SearchResults extends Activity {
                 Intent resultIntent = new Intent();
                 //resultIntent.putExtra("CAM", cam[0].getLat());
                 Bundle bundle = new Bundle();
-                bundle.putString("LAT", cam[0].getLat());
-                bundle.putString("LON", cam[0].getLon());
+
+                bundle.putSerializable("CAM", cam);
+
+                //bundle.putString("LAT", cam[0].getLat());
+                //bundle.putString("LON", cam[0].getLon());
                 resultIntent.putExtras(bundle);
                 setResult(Activity.RESULT_OK, resultIntent);
                 finish();
