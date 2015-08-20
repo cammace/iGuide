@@ -54,12 +54,6 @@ public class MainActivity extends AppCompatActivity {
     private SearchView searchView;
     private SearchRecentSuggestions suggestions;
     private MapView mv;
-
-    private boolean isOnClick;
-    private float mDownX;
-    private float mDownY;
-    private final float SCROLL_THRESHOLD = 10;
-
     private UserLocationOverlay myLocationOverlay;
 
     @Override
@@ -71,18 +65,7 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // FAB for myLocationButton
-        FAB = (FloatingActionButton) findViewById(R.id.myLocationButton);
-        FAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                //mv.getController().animateTo();
-
-                //mv.setUserLocationRequiredZoom(mv.getZoomLevel());
-                mv.goToUserLocation(true);
-            }
-        });
+        userLocationFAB();
 
 
 
@@ -243,6 +226,22 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    // This method sets up the floating action button (FAB) and handles the on click.
+    private void userLocationFAB(){
+        // FAB for myLocationButton
+        FAB = (FloatingActionButton) findViewById(R.id.myLocationButton);
+        FAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                //mv.getController().animateTo();
+
+                //mv.setUserLocationRequiredZoom(mv.getZoomLevel());
+                mv.goToUserLocation(true);
+            }
+        });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -317,49 +316,7 @@ public class MainActivity extends AppCompatActivity {
                 // Convert pressed latitude and longitude to string for URI
                 String latitude = Double.toString(pressLatLon.getLatitude());
                 String longitude = Double.toString(pressLatLon.getLongitude());
-
-
-
-
-                FragmentManager fragmentManager = getFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-
-                PlaceInfoFragment placeInfo = new PlaceInfoFragment();
-                //fragmentTransaction.setCustomAnimations(R.anim.bottom_up, R.anim.left_out);
-                Bundle latlon = new Bundle();
-                latlon.putString("LAT", latitude);
-                latlon.putString("LON", longitude);
-                placeInfo.setArguments(latlon);
-                //placeInfo.setArguments(getIntent().getExtras());
-                fragmentTransaction.add(R.id.place_info, placeInfo, "Detailed Info");
-                fragmentTransaction.commit();
-
-
-/*
-
-
-
-                PlaceInfoFragment blah = new PlaceInfoFragment();
-                android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.frame, blah);
-                fragmentTransaction.commit();
-
-
-
-
-                // Create a new Fragment to be placed in the activity layout
-                PlaceInfoFragment placeInfo = new PlaceInfoFragment();
-
-                // In case this activity was started with special instructions from an
-                // Intent, pass the Intent's extras to the fragment as arguments
-                placeInfo.setArguments(getIntent().getExtras());
-
-                // Add the fragment to the 'fragment_container' FrameLayout
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.place_info, placeInfo).commit();
-*/
-
+                System.out.println("Single press");
 
                 return true;
             }
@@ -382,12 +339,12 @@ public class MainActivity extends AppCompatActivity {
         myLocationOverlay.setDrawAccuracyEnabled(true);
         mv.getOverlays().add(myLocationOverlay);
 
-        /*
+
         Marker marker = new Marker( "test", "test", new LatLng(29.727, -95.342));
-        marker.setMarker(getResources().getDrawable(R.drawable.test_marker));
-        //marker.setToolTip(new CustomInfoWindow(mv));
+        //marker.setMarker(getResources().getDrawable(R.drawable.test_marker));
+        marker.setToolTip(new CustomInfoWindow(mv));
         mv.addMarker(marker);
-        */
+
     }
 
     private void handleIntent(Intent intent){
@@ -413,11 +370,20 @@ public class MainActivity extends AppCompatActivity {
 
                 mv.clear();
 
+                if(z.length == 0){
+                    Toast.makeText(getApplicationContext(), "No Results", Toast.LENGTH_SHORT).show();
+                }
+
                 for(int i=0; i<z.length; i++){
                     double q = Double.parseDouble(z[i].getLat());
                     double b = Double.parseDouble(z[i].getLon());
                     Marker marker = new Marker( z[i].getDisplayName(), "Description", new LatLng(q, b));
                     mv.addMarker(marker);
+                }
+
+
+                if(z.length == 1){
+                    mv.getController().animateTo(new LatLng(Double.parseDouble(z[0].getLat()), Double.parseDouble(z[0].getLon())));
                 }
 
             }
