@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/one"
+        android:title="@string/floor_B"/>
+
+    <item
+        android:id="@+id/two"
+        android:title="@string/floor_0"/>
+
+    <item
+        android:id="@+id/three"
+        android:title="@string/floor_1"/>
+
+    <item
+        android:id="@+id/four"
+        android:title="@string/floor_2"/>
+</menu>

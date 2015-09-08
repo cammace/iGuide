@@ -15,6 +15,12 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+
+        <!-- Search Suggestion Provider -->
+        <provider
+            android:name=".SearchSuggestion"
+            android:authorities="team6.iguide.SearchSuggestion" />
+
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
@@ -30,14 +36,20 @@
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable"
                 android:value=".MainActivity" />
-        </activity>
 
-        <provider
-            android:name=".SearchSuggestion"
-            android:authorities="team6.iguide.SearchSuggestion" />
+        </activity>
 
         <!-- Search Results Activity-->
         <activity android:name=".SearchResults" />
+
+        <activity
+            android:name=".DetailedInfoActivity"
+            android:label="@string/title_activity_detailed_info"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="team6.iguide.MainActivity" />
+        </activity>
 
         <!-- Settings Activity -->
         <activity

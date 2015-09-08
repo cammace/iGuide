@@ -2,27 +2,69 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/infowindow"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:elevation="10dp"
     android:orientation="vertical">
+    
+
+<LinearLayout
+    android:id="@+id/mainpanal"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/layout_bg">
+
+    <Button
+        android:id="@+id/routing_button"
+        android:paddingTop="4dp"
+        android:drawableTop="@drawable/ic_directions_walk_white_24dp"
+        android:text="Route"
+        android:textColor="#FFFFFF"
+        android:layout_width="70dp"
+        android:layout_height="match_parent"
+        android:background="@color/PrimaryColor" />
 
     <LinearLayout
-        android:background="#000000"
-        android:padding="5dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/customTooltip_title"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:textColor="#cccccc"
-            android:textSize="30sp"
-            android:layout_gravity="start"
-            android:layout_weight="1"
-            android:text="@string/toolTipTitle"/>
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:paddingBottom="2dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="4dp"
+            android:text="title"
+            android:transitionName="detailed_title"
+            android:textColor="#000000"
+            android:background="@color/white"/>
+
+        <TextView
+            android:id="@+id/ref"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:paddingTop="2dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="4dp"
+            android:text="ref"
+            android:textColor="#727272"
+            android:background="@color/white"/>
 
     </LinearLayout>
+</LinearLayout>
+
+
+    <com.mapbox.mapboxsdk.views.TipView
+        android:layout_width="fill_parent"
+        android:layout_height="10dp"
+        android:background="@null"/>
 
 </LinearLayout>

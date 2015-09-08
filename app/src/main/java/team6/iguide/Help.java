@@ -77,6 +77,10 @@ public class Help extends DialogFragment {
         final ListView listView = (ListView) view.findViewById(R.id.menu);
         listView.setAdapter(adapter);
 
+
+
+
+
         // This is the onClickListener for the four menu items.
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view,
@@ -117,4 +121,5 @@ public class Help extends DialogFragment {
         dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         return dialog;
     }
+
 }

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
+    <group android:checkableBehavior="all">
 
         <item
-            android:id="@+id/parking"
+            android:id="@+id/poi"
             android:checked="false"
-            android:icon="@drawable/ic_local_parking_black_24dp"
-            android:title="@string/parking" />
+            android:icon="@drawable/ic_place_black_24dp"
+            android:title="@string/poi" />
 
         <item
             android:id="@+id/transit"
@@ -16,42 +16,11 @@
             android:title="@string/transit" />
 
         <item
-            android:id="@+id/food"
+            android:id="@+id/parking"
             android:checked="false"
-            android:icon="@drawable/ic_restaurant_menu_black_24dp"
-            android:title="@string/food" />
+            android:icon="@drawable/ic_local_parking_black_24dp"
+            android:title="@string/parking" />
 
-        <item
-            android:id="@+id/store"
-            android:checked="false"
-            android:icon="@drawable/ic_store_black_24dp"
-            android:title="@string/store" />
-
-
-        <!--
-                <item
-                    android:id="@+id/drafts"
-                    android:checked="false"
-                    android:icon="@drawable/ic_drafts_black"
-                    android:title="@string/draft_string" />
-
-
-                <item
-                    android:id="@+id/allmail"
-                    android:checked="false"
-                    android:icon="@drawable/ic_email_black"
-                    android:title="@string/all_mail_string" />
-                <item
-                    android:id="@+id/trash"
-                    android:checked="false"
-                    android:icon="@drawable/ic_delete_black"
-                    android:title="@string/trash_string" />
-                <item
-                    android:id="@+id/spam"
-                    android:checked="false"
-                    android:icon="@drawable/ic_error_black"
-                    android:title="@string/spam_string" />
-        -->
     </group>
 
     <group android:id="@+id/group_2">
