@@ -92,14 +92,9 @@ public class DetailedInfoActivity extends AppCompatActivity{
 
 
         if(hours != null) formatHourString();
+        getWikiSnippet();
 
         populateDetailedList();
-
-        //imageView = (ImageView)findViewById(R.id.place_image);
-        //imageView.setScaleType(ImageView.ScaleType.FIT_XY);
-
-
-
     }
 
     private void populateDetailedList() {
@@ -177,7 +172,13 @@ public class DetailedInfoActivity extends AppCompatActivity{
 
     }
 
+    private void getWikiSnippet(){
 
+        String[] wikiLinkParts = wiki.split(":");
+
+        String wikiLink = "https://" + wikiLinkParts[0] + ".wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&format=json&titles=" + wikiLinkParts[1].replace(" ", "%20");
+        System.out.println(wikiLink);
+    }
 
     private void compareDates(String compareStringOne , String compareStringTwo){
         Calendar now = Calendar.getInstance();
@@ -253,4 +254,5 @@ public class DetailedInfoActivity extends AppCompatActivity{
             bmImage.setImageBitmap(result);
         }
     }
+
 }
