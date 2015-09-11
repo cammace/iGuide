@@ -4,6 +4,7 @@ package team6.iguide;
 // Future plans: add method to check if current date is a holiday and if so display it to user within
 // hour item.
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,6 +19,16 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
+
+import org.json.JSONObject;
+
 import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -25,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+
+import team6.iguide.OverpassModel.OverpassModel;
 
 public class DetailedInfoActivity extends AppCompatActivity{
 
@@ -39,6 +52,11 @@ public class DetailedInfoActivity extends AppCompatActivity{
     String hours;
     String formatedHours;
     String image;
+    String wikiLink;
+    ArrayList<DetailItem> detailItems;
+    String wikiExtract;
+    CustomDetailItemAdapter adapter;
+    private RequestQueue mRequestQueue;
     public static final String inputFormat = "HH:mm";
     private Date date;
     private Date dateCompareOne;
@@ -92,13 +110,15 @@ public class DetailedInfoActivity extends AppCompatActivity{
 
 
         if(hours != null) formatHourString();
-        getWikiSnippet();
+
+        mRequestQueue = Volley.newRequestQueue(this);
+        if(wiki != null) getWikiSnippet();
 
         populateDetailedList();
     }
 
     private void populateDetailedList() {
-        ArrayList<DetailItem> detailItems = new ArrayList<DetailItem>();
+        detailItems = new ArrayList<DetailItem>();
         if(ref != null) detailItems.add(new DetailItem("Reference", ref));
         if(phone != null) detailItems.add(new DetailItem("Phone", phone));
         if(website != null) detailItems.add(new DetailItem("Website", website));
@@ -108,7 +128,7 @@ public class DetailedInfoActivity extends AppCompatActivity{
         if(hours != null) detailItems.add(new DetailItem("Hours", formatedHours));
 
         // Create the adapter to convert the array to views
-        CustomDetailItemAdapter adapter = new CustomDetailItemAdapter(this, detailItems);
+        adapter = new CustomDetailItemAdapter(this, detailItems);
         // Attach the adapter to a ListView
         ListView listView = (ListView) findViewById(R.id.details_list);
         listView.setAdapter(adapter);
@@ -176,8 +196,50 @@ public class DetailedInfoActivity extends AppCompatActivity{
 
         String[] wikiLinkParts = wiki.split(":");
 
-        String wikiLink = "https://" + wikiLinkParts[0] + ".wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&format=json&titles=" + wikiLinkParts[1].replace(" ", "%20");
-        System.out.println(wikiLink);
+        wikiLink = "https://" + wikiLinkParts[0] + ".wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&format=json&titles=" + wikiLinkParts[1].replace(" ", "%20");
+        //System.out.println(wikiLink);
+        fetchJsonResponse();
+    }
+
+    private void fetchJsonResponse() {
+
+        JsonObjectRequest req = new JsonObjectRequest(wikiLink, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+
+                //Gson gson = new Gson();
+                String wikiData = response.toString();
+                //System.out.println(overpassData);
+                //OverpassModel cam = gson.fromJson(overpassData, OverpassModel.class);
+
+                //OverpassElement s = new OverpassElement();
+                //String z = Double.toString(s.getLat());
+                //String z = cam.getElements().toString();
+
+                wikiExtract = wikiData.substring(wikiData.indexOf("extract") +10);
+                wikiExtract = wikiExtract.substring(0,wikiExtract.length()-5);
+                detailItems.add(new DetailItem("Wikipedia", wikiExtract));
+                adapter.notifyDataSetChanged();
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // TODO Auto-generated method stub
+                System.out.println(error);
+
+            }
+        });
+        mRequestQueue.add(req);
+
+        // This allows volley to retry request if for some reason it times out the first time
+        // More info can be found in this question:
+        // http://stackoverflow.com/questions/17094718/android-volley-timeout
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                5000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
     }
 
     private void compareDates(String compareStringOne , String compareStringTwo){

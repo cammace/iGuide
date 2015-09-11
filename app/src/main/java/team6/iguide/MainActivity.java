@@ -471,6 +471,7 @@ public class MainActivity extends AppCompatActivity {
         myLocationOverlay.enableMyLocation();
         myLocationOverlay.setDrawAccuracyEnabled(true);
 
+
        // mv.getUserLocationOverlay().setDirectionArrowBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.red_pin));
        // mv.getUserLocationOverlay().setPersonBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.green_pin));
        // mv.getUserLocationOverlay().setTrackingMode(UserLocationOverlay.TrackingMode.FOLLOW_BEARING);
@@ -543,6 +544,7 @@ public class MainActivity extends AppCompatActivity {
                 // Clear the mapview of any markers
                 mv.closeCurrentTooltip();
                 mv.clear();
+                mv.clearMarkerFocus();
 
                 // Check if the search returns no results
                 if(q.isEmpty()){
@@ -567,7 +569,7 @@ public class MainActivity extends AppCompatActivity {
                     // This counts how many of the search results are valid results
                     int pinCount = 0;
                     for(int i = 0; i < q.size(); i++) {
-                        if (q.get(i).getType().equals("way")) {
+                        if (q.get(i).getType().equals("way") || q.get(i).getType().equals("relation")) {
                             pinCount++;
                         }
                     }
@@ -599,8 +601,8 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                     else{
-                        for(int i = 0; i < q.size(); i++) {
-                            if(q.get(i).getType().equals("way")){
+                        for(int i = 0; i < pinCount; i++) {
+                            if(q.get(i).getType().equals("way") || q.get(i).getType().equals("relation")){
                                 Marker marker = new Marker(q.get(i).getTags().getName(), q.get(i).getTags().getRef(), new LatLng(
                                         q.get(i).getCenter().getLat(), q.get(i).getCenter().getLon()));
                                 marker.setToolTip(new CustomInfoWindow(this, mv, q, i));

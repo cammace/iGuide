@@ -32,7 +32,7 @@ public class CustomInfoWindow extends InfoWindow {
     String ref;
     String address;
 
-    public CustomInfoWindow(Context context, MapView mv, final List<OverpassElement> searchResults, final int listPosition) {
+    public CustomInfoWindow(Context context, final MapView mv, final List<OverpassElement> searchResults, final int listPosition) {
         super(R.layout.infowindow_custom, mv);
         this.mContext = context;
         getView().findViewById(R.id.mainpanal).setClipToOutline(true);
@@ -43,7 +43,8 @@ public class CustomInfoWindow extends InfoWindow {
             public void onClick(View v) {
                 Toast.makeText(mView.getContext(), "begin routing", Toast.LENGTH_SHORT).show();
 
-
+                Graphhopper graphhopper = new Graphhopper();
+                graphhopper.executeRoute(searchResults.get(listPosition).getCenter().getLat(), searchResults.get(listPosition).getCenter().getLon(), mv.getUserLocation());
 
                 close();
             }

@@ -1,31 +1,39 @@
 package team6.iguide;
 
-import android.os.AsyncTask;
+import android.net.Uri;
 
-public class Graphhopper extends AsyncTask<Void, Void, Void> {
+import com.mapbox.mapboxsdk.geometry.LatLng;
 
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
+public class Graphhopper{
 
-        System.out.println("onPreExecute...");
+    public void executeRoute(double lat, double lon, LatLng userLocation){
+
+        // Convert all the latitudes and longitudes to strings
+        String destinationLat = String.valueOf(lat);
+        String destinationLon = String.valueOf(lon);
+        String userLat = String.valueOf(userLocation.getLatitude());
+        String userLon = String.valueOf(userLocation.getLongitude());
+
+        // Create the Graphhopper API URI
+        String graphhopperURI = buildURI(destinationLat, destinationLon, userLat, userLon);
+        System.out.println(graphhopperURI);
     }
-    @Override
-    protected Void doInBackground(Void... params) {
 
-        //this method will be running on background thread so don't update UI frome here
-        //do your long running http tasks here,you dont want to pass argument and u can access the parent class' variable url over here
+    private String buildURI(String dLat, String dLon, String uLat, String uLon){
 
-
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(Void result) {
-        super.onPostExecute(result);
-
-        //this method will be running on UI thread
-
+        Uri.Builder builder = new Uri.Builder();
+        builder.scheme("https")
+                .authority("www.graphhopper.com")
+                .appendPath("api")
+                .appendPath("1")
+                .appendPath("route")
+                .appendQueryParameter("point", dLat + "," + dLon)
+                .appendQueryParameter("point", uLat + "," + uLon)
+                .appendQueryParameter("vehicle", "foot")
+                .appendQueryParameter("key", "2a3617f7-dd96-4a1b-b16a-412c3d74ee94")
+                .appendQueryParameter("type", "json")
+                .appendQueryParameter("points_encoded", "false");
+        return builder.build().toString();
     }
 
 }
