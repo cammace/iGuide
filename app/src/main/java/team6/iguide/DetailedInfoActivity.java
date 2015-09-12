@@ -6,8 +6,10 @@ package team6.iguide;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -15,6 +17,7 @@ import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -120,12 +123,11 @@ public class DetailedInfoActivity extends AppCompatActivity{
     private void populateDetailedList() {
         detailItems = new ArrayList<DetailItem>();
         if(ref != null) detailItems.add(new DetailItem("Reference", ref));
+        if(hours != null) detailItems.add(new DetailItem("Hours", formatedHours));
         if(phone != null) detailItems.add(new DetailItem("Phone", phone));
         if(website != null) detailItems.add(new DetailItem("Website", website));
         if(address != null) detailItems.add(new DetailItem("Address", address));
-        if(wiki != null) detailItems.add(new DetailItem("Wikipedia", wiki));
         if(fax != null) detailItems.add(new DetailItem("Fax", fax));
-        if(hours != null) detailItems.add(new DetailItem("Hours", formatedHours));
 
         // Create the adapter to convert the array to views
         adapter = new CustomDetailItemAdapter(this, detailItems);
@@ -133,7 +135,28 @@ public class DetailedInfoActivity extends AppCompatActivity{
         ListView listView = (ListView) findViewById(R.id.details_list);
         listView.setAdapter(adapter);
 
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
+                switch(detailItems.get(position).key){
+                    case "Phone":
+                        Intent phoneCall = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + detailItems.get(position).value));
+                        startActivity(phoneCall);
+                        break;
+                    case "Website":
+                        Intent openWebsite = new Intent(Intent.ACTION_VIEW, Uri.parse(detailItems.get(position).value));
+                        startActivity(openWebsite);
+                        break;
+                    case "Wikipedia":
+                        String[] wikiLinkParts = wiki.split(":");
+                        String wikiURL = "https://" + wikiLinkParts[0] + ".wikipedia.org/wiki/" + wikiLinkParts[1].replace(" ", "_");
+                        Intent openWiki = new Intent(Intent.ACTION_VIEW, Uri.parse(wikiURL));
+                        startActivity(openWiki);
+                        break;
+                }
+            }
+        });
     }
 
     private void formatHourString(){
@@ -219,6 +242,8 @@ public class DetailedInfoActivity extends AppCompatActivity{
 
                 wikiExtract = wikiData.substring(wikiData.indexOf("extract") +10);
                 wikiExtract = wikiExtract.substring(0,wikiExtract.length()-5);
+                // TODO implement method to shorten wiki if very long
+                //System.out.println(wikiExtract.trim().split(" ").length);
                 detailItems.add(new DetailItem("Wikipedia", wikiExtract));
                 adapter.notifyDataSetChanged();
             }
@@ -287,6 +312,7 @@ public class DetailedInfoActivity extends AppCompatActivity{
             public void onClick(View v) {
 
                 System.out.println("begin routing");
+
 
             }
         });

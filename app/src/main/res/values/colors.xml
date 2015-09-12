@@ -2,4 +2,6 @@
 <resources>
     <color name="PrimaryColor">#2196F3</color>
     <color name="PrimaryDarkColor">#1976D2</color>
+    <color name="RoutePrimaryColor">#46C0FC</color>
+    <color name="RouteDarkColor">#2895E1</color>
 </resources>

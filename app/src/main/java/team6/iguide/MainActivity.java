@@ -26,6 +26,7 @@ import com.mapbox.mapboxsdk.api.ILatLng;
 import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.GpsLocationProvider;
+import com.mapbox.mapboxsdk.overlay.ItemizedIconOverlay;
 import com.mapbox.mapboxsdk.overlay.MapEventsOverlay;
 import com.mapbox.mapboxsdk.overlay.MapEventsReceiver;
 import com.mapbox.mapboxsdk.overlay.Marker;
@@ -36,12 +37,7 @@ import com.mapbox.mapboxsdk.tileprovider.MapTileLayerBasic;
 import com.mapbox.mapboxsdk.tileprovider.tilesource.MapboxTileLayer;
 import com.mapbox.mapboxsdk.views.MapView;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.List;
-
-import team6.iguide.OverpassModel.OverpassElement;
-import team6.iguide.OverpassModel.OverpassModel;
 
 // http://stackoverflow.com/questions/20610253/how-to-enable-longclick-on-map-with-osmdroid-in-supportmapfragment
 
@@ -69,7 +65,9 @@ public class MainActivity extends AppCompatActivity {
     private TilesOverlay level_1;
     private TilesOverlay level_2;
     private TilesOverlay transitLines;
-    private int currentLevel;
+    boolean placedMarkerSet = false;
+    Marker placedMarker;
+    public int currentLevel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -179,19 +177,15 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     case R.id.poi:
                         drawerLayout.closeDrawers();
-
-                        final Intent searchIntent = new Intent(getApplicationContext(),
-                                SearchResults.class);
-                        // add query to the Intent Extras
-                        String query = "atm";
-                        searchIntent.putExtra(SearchManager.QUERY, query);
-                        startActivityForResult(searchIntent, 444);
+                        if(menuItem.isChecked()) {
+                            PointOfInterest pointOfInterest = new PointOfInterest();
+                            pointOfInterest.getPOI(MainActivity.this, mv);
+                        }else{
+                            mv.clear();
+                            mv.clearMarkerFocus();
+                        }
 
                         return true;
-                    /*case R.id.store:
-                        drawerLayout.closeDrawers();
-                        Toast.makeText(getApplicationContext(), "Store", Toast.LENGTH_SHORT).show();
-                        return true;*/
                     case R.id.settings:
                         intent = new Intent(MainActivity.this, Settings.class);
                         startActivity(intent);
@@ -204,10 +198,6 @@ public class MainActivity extends AppCompatActivity {
 
                         DialogFragment newFragmentHelp = new Help();
                         newFragmentHelp.show(getSupportFragmentManager(), "Help & Feedback");
-                       /* Help fragment = new Help();
-                        android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                        fragmentTransaction.replace(R.id.frame, fragment);
-                        fragmentTransaction.commit();*/
                         return true;
                     default:
                         Toast.makeText(getApplicationContext(), "Somethings Wrong", Toast.LENGTH_SHORT).show();
@@ -250,10 +240,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                //mv.getController().animateTo();
-
-                //mv.setUserLocationRequiredZoom(mv.getZoomLevel());
                 mv.goToUserLocation(true);
+
             }
         });
     }
@@ -347,7 +335,8 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-    private void setCurrentLevel1(){
+    public void setCurrentLevel1(){
+        //if(currentLevel)
         mv.getOverlays().remove(level_1);
         mv.getOverlays().remove(level_2);
         mv.getOverlays().add(level_0);
@@ -355,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
         currentLevel = 1;
     }
 
-    private void setCurrentLevel2(){
+    public void setCurrentLevel2(){
         mv.getOverlays().remove(level_0);
         mv.getOverlays().remove(level_2);
         mv.getOverlays().add(level_1);
@@ -363,13 +352,14 @@ public class MainActivity extends AppCompatActivity {
         currentLevel = 2;
     }
 
-    private void setCurrentLevel3() {
+    public void setCurrentLevel3() {
         mv.getOverlays().remove(level_0);
         mv.getOverlays().remove(level_1);
         mv.getOverlays().add(level_2);
         mv.invalidate();
         currentLevel = 3;
     }
+
 
     public void setMap() {
 
@@ -456,9 +446,17 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean longPressHelper(ILatLng pressLatLon) {
+                if(placedMarkerSet) mv.removeMarker(placedMarker);
 
-                // TODO long press will give user immediate route results
-                System.out.println("Long press");
+                placedMarker = new Marker("test", "test", new LatLng(pressLatLon.getLatitude(), pressLatLon.getLongitude()));
+                //placedMarker.setToolTip(new CustomInfoWindow(MainActivity.this, mv, null, 0));
+                placedMarker.setMarker(MainActivity.this.getDrawable(R.drawable.green_pin));
+                mv.addMarker(placedMarker);
+                placedMarkerSet = true;
+
+                Graphhopper graphhopper = new Graphhopper();
+                graphhopper.executeRoute(MainActivity.this, mv,pressLatLon.getLatitude(),pressLatLon.getLongitude(), mv.getUserLocation());
+
 
                 return true;
             }
@@ -489,148 +487,10 @@ public class MainActivity extends AppCompatActivity {
                     SearchSuggestion.AUTHORITY, SearchSuggestion.MODE);
             suggestions.saveRecentQuery(query, null);
 
-            // manually launch the real search activity
-            final Intent searchIntent = new Intent(getApplicationContext(),
-                    SearchResults.class);
+            Search search = new Search();
+            // Get the search query
+            search.executeSearch(this, mv, query);
 
-            // add query to the Intent Extras
-            searchIntent.putExtra(SearchManager.QUERY, query);
-            startActivityForResult(searchIntent, 222);
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-/*
-        if(requestCode == 444){
-            // TODO create caching of POI so every time its toggled It doesn't have to use volley.
-            if(resultCode == RESULT_OK) {
-
-                Bundle n = data.getExtras();
-                Serializable a = n.getSerializable("CAM");
-                OverpassModel b = ((OverpassModel) a);
-
-                List<OverpassElement> poi = b.getElements();
-
-                //System.out.println(poi.get(0).getTags().getAmenity());
-
-
-                for(int j = 0; j < poi.size(); j++) {
-                    if (poi.get(j).getTags().getAmenity().equals("atm")) {
-                        Marker marker = new Marker("ATM", "Description", new LatLng(
-                                poi.get(j).getLat(), poi.get(j).getLon()));
-                        marker.setToolTip(new CustomInfoWindow(mv));
-                        marker.setMarker(getResources().getDrawable(R.drawable.red_pin));
-                        mv.addMarker(marker);
-                    }
-                    System.out.println(j);
-                }
-                System.out.println("blah");
-            }
-
-        }
-
-*/
-
-        if(requestCode == 222){
-            if(resultCode == RESULT_OK){
-
-                Bundle n = data.getExtras();
-                Serializable x = n.getSerializable("CAM");
-                OverpassModel z = ((OverpassModel) x);
-
-                List<OverpassElement> q = z.getElements();
-
-                // Clear the mapview of any markers
-                mv.closeCurrentTooltip();
-                mv.clear();
-                mv.clearMarkerFocus();
-
-                // Check if the search returns no results
-                if(q.isEmpty()){
-                    Toast.makeText(getApplicationContext(), "No Results", Toast.LENGTH_SHORT).show();
-                } else {
-/*
-                    if((q.get(0).getTags().getAmenity() != null)){
-                        //System.out.println("amenity");
-                        if (q.get(0).getType().equals("node")) {
-                            for (int i = 0; i < q.size(); i++) {
-                                Marker marker = new Marker("ATM", "Description", new LatLng(
-                                        q.get(i).getLat(), q.get(i).getLon()));
-                                mv.addMarker(marker);
-                            }
-                        } else {
-                            System.out.println("amenity");
-                        }
-                    }*/
-
-
-
-                    // This counts how many of the search results are valid results
-                    int pinCount = 0;
-                    for(int i = 0; i < q.size(); i++) {
-                        if (q.get(i).getType().equals("way") || q.get(i).getType().equals("relation")) {
-                            pinCount++;
-                        }
-                    }
-
-                    if(pinCount == 1) {
-                        // Check if the search returned a building
-                        if (q.get(0).getTags().getBuilding() != null) {
-                            Marker marker = new Marker(q.get(0).getTags().getName(), q.get(0).getTags().getRef(), new LatLng(
-                                    q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
-                            marker.setToolTip(new CustomInfoWindow(this, mv, q, 0));
-                            marker.setMarker(getResources().getDrawable(R.drawable.red_pin));
-                            mv.addMarker(marker);
-                            mv.getController().animateTo(new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
-                            mv.getController().setZoom(19);
-                        }
-                        // Check if the search returned a room
-                        else if (q.get(0).getTags().getIndoor() != null) {
-
-                            Marker marker = new Marker(q.get(0).getTags().getName(), q.get(0).getTags().getRef(), new LatLng(
-                                    q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
-                            marker.setToolTip(new CustomInfoWindow(this, mv, q, 0));
-                            marker.setMarker(getResources().getDrawable(R.drawable.red_pin));
-                            if(q.get(0).getTags().getLevel().equals("0") && currentLevel != 1) setCurrentLevel1();
-                            if(q.get(0).getTags().getLevel().equals("1") && currentLevel != 2) setCurrentLevel2();
-                            if(q.get(0).getTags().getLevel().equals("2") && currentLevel != 3) setCurrentLevel3();
-                            mv.addMarker(marker);
-                            mv.getController().animateTo(new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
-                            mv.getController().setZoom(21);
-                        }
-                    }
-                    else{
-                        for(int i = 0; i < pinCount; i++) {
-                            if(q.get(i).getType().equals("way") || q.get(i).getType().equals("relation")){
-                                Marker marker = new Marker(q.get(i).getTags().getName(), q.get(i).getTags().getRef(), new LatLng(
-                                        q.get(i).getCenter().getLat(), q.get(i).getCenter().getLon()));
-                                marker.setToolTip(new CustomInfoWindow(this, mv, q, i));
-                                marker.setMarker(getResources().getDrawable(R.drawable.red_pin));
-                                mv.addMarker(marker);
-                                mv.getController().setZoom(17);
-                            }
-                        }
-                        /*for(int i = 0; i < q.size(); i++){
-                            if (q.get(i).getTags().getBuilding() != null) {
-                                Marker marker = new Marker(q.get(i).getTags().getName(), "Description", new LatLng(
-                                        q.get(i).getCenter().getLat(), q.get(i).getCenter().getLon()));
-                                marker.setToolTip(new CustomInfoWindow(mv));
-                                mv.addMarker(marker);
-                            }
-                            // Check if the search returned a room
-                            else if (q.get(i).getTags().getIndoor() != null) {
-
-                                Marker marker = new Marker(q.get(i).getTags().getName(), q.get(i).getTags().getRef(), new LatLng(
-                                        q.get(i).getCenter().getLat(), q.get(i).getCenter().getLon()));
-                                marker.setToolTip(new CustomInfoWindow(mv));
-                                mv.addMarker(marker);
-                            }
-                        }*/
-
-                    }
-                }
-            }
         }
     }
 
@@ -646,6 +506,4 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         myLocationOverlay.disableMyLocation();
     }
-
-
 }

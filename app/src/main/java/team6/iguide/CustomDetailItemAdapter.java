@@ -20,7 +20,7 @@ public class CustomDetailItemAdapter  extends ArrayAdapter<DetailItem> {
         DetailItem detailItem = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_user, parent, false);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_default, parent, false);
         }
         // Lookup view for data population
         TextView tvKey = (TextView) convertView.findViewById(R.id.menuItemDescription);

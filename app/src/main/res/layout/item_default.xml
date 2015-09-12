@@ -10,7 +10,7 @@
     android:paddingBottom="10dp">
 
     <ImageView
-        android:id="@+id/menuIcon"
+        android:id="@+id/itemIcon"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:tint="#727272" />
@@ -36,7 +36,6 @@
             android:layout_height="wrap_content"
             android:paddingLeft="16dp"
             android:paddingTop="2dp"
-            android:singleLine="true"
             android:text="Medium Text"
             android:textColor="#000000"
             android:textSize="16sp" />

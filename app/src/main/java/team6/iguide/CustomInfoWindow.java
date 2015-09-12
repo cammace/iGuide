@@ -26,11 +26,12 @@ import team6.iguide.OverpassModel.OverpassElement;
 
 public class CustomInfoWindow extends InfoWindow {
 
-    public LatLng destinationLat;
+
     private Context mContext;
     String title;
     String ref;
     String address;
+    String country;
 
     public CustomInfoWindow(Context context, final MapView mv, final List<OverpassElement> searchResults, final int listPosition) {
         super(R.layout.infowindow_custom, mv);
@@ -41,10 +42,10 @@ public class CustomInfoWindow extends InfoWindow {
         Button routing = (Button)mView.findViewById(R.id.routing_button);
         routing.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Toast.makeText(mView.getContext(), "begin routing", Toast.LENGTH_SHORT).show();
 
                 Graphhopper graphhopper = new Graphhopper();
-                graphhopper.executeRoute(searchResults.get(listPosition).getCenter().getLat(), searchResults.get(listPosition).getCenter().getLon(), mv.getUserLocation());
+                if(searchResults.get(listPosition).getType().equals("node"))graphhopper.executeRoute(mView.getContext(), mv, searchResults.get(listPosition).getLat(), searchResults.get(listPosition).getLon(), mv.getUserLocation());
+                else graphhopper.executeRoute(mView.getContext(), mv, searchResults.get(listPosition).getCenter().getLat(), searchResults.get(listPosition).getCenter().getLon(), mv.getUserLocation());
 
                 close();
             }
@@ -65,12 +66,17 @@ public class CustomInfoWindow extends InfoWindow {
                     //        makeSceneTransitionAnimation(mView.getContext(), p3);
 
                     //System.out.println(searchResults.get(listPosition).getTags().getName());
+
+                    if(searchResults.get(listPosition).getTags().getAddrCountry() != null &&
+                            searchResults.get(listPosition).getTags().getAddrCountry().equals("US")) country = "United States";
+                    else searchResults.get(listPosition).getTags().getAddrCountry();
+
                     if(searchResults.get(listPosition).getTags().getAddrHousenumber() != null) {
                         address = searchResults.get(listPosition).getTags().getAddrHousenumber() + " " +
-                                searchResults.get(listPosition).getTags().getAddrStreet() + " " +
+                                searchResults.get(listPosition).getTags().getAddrStreet() + " " + "\n" +
                                 searchResults.get(listPosition).getTags().getAddrCity() + " " +
-                                searchResults.get(listPosition).getTags().getAddrPostcode() + " " +
-                                searchResults.get(listPosition).getTags().getAddrCountry();
+                                searchResults.get(listPosition).getTags().getAddrPostcode() + " " + "\n" +
+                                country;
                     }
 
                     Bundle bundle = new Bundle();
@@ -102,8 +108,6 @@ public class CustomInfoWindow extends InfoWindow {
     public void onOpen(Marker overlayItem) {
         title = overlayItem.getTitle();
         ref = overlayItem.getDescription();
-        destinationLat = overlayItem.getPoint();
-        //System.out.println(destinationLat.toString());
         ((TextView) mView.findViewById(R.id.title)).setText(title);
         ((TextView) mView.findViewById(R.id.ref)).setText(ref);
     }
