@@ -89,6 +89,8 @@ System.out.println(line);
 
                 routeInfo = gson.fromJson(graphhopperData, GraphhopperModel.class);
                 drawRoute();
+                System.out.println(routeInfo.getPaths().get(0).getDistance());
+                System.out.println(routeInfo.getPaths().get(0).getTime());
             }
         }, new Response.ErrorListener() {
 

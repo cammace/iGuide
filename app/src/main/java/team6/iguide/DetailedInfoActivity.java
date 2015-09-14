@@ -111,7 +111,6 @@ public class DetailedInfoActivity extends AppCompatActivity{
         TextView titleView = (TextView) findViewById(R.id.detail_info_title);
         titleView.setText(title);
 
-
         if(hours != null) formatHourString();
 
         mRequestQueue = Volley.newRequestQueue(this);
@@ -164,23 +163,22 @@ public class DetailedInfoActivity extends AppCompatActivity{
         Calendar calendar = Calendar.getInstance();
 
         if(hours.contains("Su ") && calendar.get(Calendar.DAY_OF_WEEK) == 1) formatedHours = hours.substring(hours.indexOf("Su ")+2);
-        if(hours.contains("Mo ") && calendar.get(Calendar.DAY_OF_WEEK) == 2) formatedHours = hours.substring(hours.indexOf("Mo ")+2);
-        if(hours.contains("Tu ") && calendar.get(Calendar.DAY_OF_WEEK) == 3) formatedHours = hours.substring(hours.indexOf("Tu ")+2);
-        if(hours.contains("We ") && calendar.get(Calendar.DAY_OF_WEEK) == 4) formatedHours = hours.substring(hours.indexOf("We ")+2);
-        if(hours.contains("Th ") && calendar.get(Calendar.DAY_OF_WEEK) == 5) formatedHours = hours.substring(hours.indexOf("Th ")+2);
-        if(hours.contains("Fr ") && calendar.get(Calendar.DAY_OF_WEEK) == 6) formatedHours = hours.substring(hours.indexOf("Fr ")+2);
-        if(hours.contains("Sa ") && calendar.get(Calendar.DAY_OF_WEEK) == 7) formatedHours = hours.substring(hours.indexOf("Sa ")+2);
+        else if(hours.contains("Mo ") && calendar.get(Calendar.DAY_OF_WEEK) == 2) formatedHours = hours.substring(hours.indexOf("Mo ")+2);
+        else if(hours.contains("Tu ") && calendar.get(Calendar.DAY_OF_WEEK) == 3) formatedHours = hours.substring(hours.indexOf("Tu ")+2);
+        else if(hours.contains("We ") && calendar.get(Calendar.DAY_OF_WEEK) == 4) formatedHours = hours.substring(hours.indexOf("We ")+2);
+        else if(hours.contains("Th ") && calendar.get(Calendar.DAY_OF_WEEK) == 5) formatedHours = hours.substring(hours.indexOf("Th ")+2);
+        else if(hours.contains("Fr ") && calendar.get(Calendar.DAY_OF_WEEK) == 6) formatedHours = hours.substring(hours.indexOf("Fr ")+2);
+        else if(hours.contains("Sa ") && calendar.get(Calendar.DAY_OF_WEEK) == 7) formatedHours = hours.substring(hours.indexOf("Sa ")+2);
 
-        if(hours.contains("Mo-Fr ") && (calendar.get(Calendar.DAY_OF_WEEK) >=2) &&(calendar.get(Calendar.DAY_OF_WEEK) <= 6)) formatedHours = hours.substring(hours.indexOf("Mo-Fr ")+6, hours.indexOf(";"));
-        if(hours.contains("Mo-Th ") && (calendar.get(Calendar.DAY_OF_WEEK) >=2) &&(calendar.get(Calendar.DAY_OF_WEEK) <= 5)) formatedHours = hours.substring(hours.indexOf("Mo-Th ")+6, hours.indexOf(";"));
+        else if(hours.contains("Mo-Fr ") && (calendar.get(Calendar.DAY_OF_WEEK) >=2) &&(calendar.get(Calendar.DAY_OF_WEEK) <= 6) && hours.contains(";")) formatedHours = hours.substring(hours.indexOf("Mo-Fr ")+6, hours.indexOf(";"));
+        else if(hours.contains("Mo-Th ") && (calendar.get(Calendar.DAY_OF_WEEK) >=2) &&(calendar.get(Calendar.DAY_OF_WEEK) <= 5)) formatedHours = hours.substring(hours.indexOf("Mo-Th ")+6, hours.indexOf(";"));
+        else {
+            formatedHours = hours;
+            return;
+        }
 
         String[] hours = formatedHours.split("-");
         compareDates(hours[0], hours[1]);
-
-
-        System.out.println(calendar.get(Calendar.HOUR));
-        //calendar.get(Calendar.MINUTE));
-        //System.out.println(isNowBetweenDateTime(start, end));
 
         String opening = convert24to12(hours[0]);
         String closing = convert24to12(hours[1]);
@@ -188,30 +186,6 @@ public class DetailedInfoActivity extends AppCompatActivity{
         if(closing.startsWith("0")) closing = closing.substring(1);
 
         formatedHours = opening + " - " + closing + ", " + OC;
-
-
-        //System.out.println(calendar.get(Calendar.HOUR) + calendar.get(Calendar.MINUTE));
-
-
-/*
-        int hour = calendar.get(Calendar.HOUR);
-        int minute = calendar.get(Calendar.MINUTE);
-        int pm = calendar.get(Calendar.AM_PM);
-        Date date = parseDate(hour + ":" + minute + " " + pm);
-        System.out.println(date);
-*/
-
-
-        System.out.println(formatedHours);
-
-
-
-
-
-
-
-
-
 
     }
 
