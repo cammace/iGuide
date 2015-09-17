@@ -22,6 +22,7 @@ import com.mapbox.mapboxsdk.views.MapView;
 
 import java.util.List;
 
+import team6.iguide.GraphhopperModel.GraphhopperModel;
 import team6.iguide.OverpassModel.OverpassElement;
 
 public class CustomInfoWindow extends InfoWindow {
@@ -43,9 +44,16 @@ public class CustomInfoWindow extends InfoWindow {
         routing.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                Graphhopper graphhopper = new Graphhopper();
-                if(searchResults.get(listPosition).getType().equals("node"))graphhopper.executeRoute(mView.getContext(), mv, searchResults.get(listPosition).getLat(), searchResults.get(listPosition).getLon(), mv.getUserLocation());
-                else graphhopper.executeRoute(mView.getContext(), mv, searchResults.get(listPosition).getCenter().getLat(), searchResults.get(listPosition).getCenter().getLon(), mv.getUserLocation());
+                if(mv.getUserLocation() == null){
+                    Toast.makeText(mContext, "Can't find your location on map", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //TODO check to make sure user is location is within bounding box, otherwise return;
+
+                MainActivity mainActivity = new MainActivity();
+                if(searchResults.get(listPosition).getType().equals("node")) mainActivity.displayRouting(mView.getContext(), mv, searchResults.get(listPosition).getLat(), searchResults.get(listPosition).getLon(), mv.getUserLocation());
+                else mainActivity.displayRouting(mView.getContext(), mv, searchResults.get(listPosition).getCenter().getLat(), searchResults.get(listPosition).getCenter().getLon(), mv.getUserLocation());
 
                 close();
             }

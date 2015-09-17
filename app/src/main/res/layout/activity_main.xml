@@ -18,12 +18,17 @@
             layout="@layout/tool_bar"
             />
 
+        <ProgressBar
+            android:id="@+id/loadProgressBar"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_below="@+id/toolbar"
+            android:indeterminate="true" />
+
         <FrameLayout
             android:id="@+id/map_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_above="@+id/place_info">
-
+            android:layout_height="match_parent">
 
             <com.mapbox.mapboxsdk.views.MapView
                 android:id="@+id/mapview"
@@ -54,6 +59,11 @@
                 android:layout_gravity="bottom"
                 android:elevation="20dp"
                 android:clickable="true" />
+
+            <FrameLayout
+                android:id="@+id/route_detail_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
         </FrameLayout>
 
 

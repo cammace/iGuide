@@ -1,6 +1,7 @@
 package team6.iguide;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -28,15 +29,12 @@ public class Search {
     OverpassModel results;
     Context mapContext;
     String boundingBox = "(29.709354854765827,-95.35668790340424,29.731896194504913,-95.31928449869156);";
+    FloorLevel floorLevel = new FloorLevel();
 
     public void executeSearch(Context context, MapView mapView, String value){
 
         mv = mapView;
         mapContext = context;
-
-
-
-
 
         value = value.replace(" ", "%20");
 
@@ -56,15 +54,6 @@ public class Search {
 
 
     }
-
-
-
-
-
-
-
-
-
 
     private void fetchJsonResponse(String URI) {
 
@@ -135,19 +124,20 @@ public class Search {
                 // Check if the search returned a room
                 else if (q.get(0).getTags().getIndoor() != null) {
 
+                    if(floorLevel.getCurrentFloorLevel() != Integer.parseInt(q.get(0).getTags().getLevel())){
+                        System.out.println(Integer.parseInt(q.get(0).getTags().getLevel()));
+                        floorLevel.changeFloorLevel(mapContext, mv, Integer.parseInt(q.get(0).getTags().getLevel()));
+                        floorLevel.setCurrentFloorLevel(Integer.parseInt(q.get(0).getTags().getLevel()));
+                    }
+
                     Marker marker = new Marker(q.get(0).getTags().getName(), q.get(0).getTags().getRef(), new LatLng(
                             q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
                     marker.setToolTip(new CustomInfoWindow(mapContext, mv, q, 0));
                     marker.setMarker(mapContext.getResources().getDrawable(R.drawable.red_pin));
-                   // if (q.get(0).getTags().getLevel().equals("0"))
-                        //setCurrentLevel1();
-                    /*if (q.get(0).getTags().getLevel().equals("1") && mainActivity.getCurrentLevel() != 2)
-                        mainActivity.setCurrentLevel2();
-                    if (q.get(0).getTags().getLevel().equals("2") && mainActivity.getCurrentLevel() != 3)
-                        mainActivity.setCurrentLevel3();*/
                     mv.addMarker(marker);
                     mv.getController().animateTo(new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
                     mv.getController().setZoom(21);
+
                 }
             } else {
                 for (int i = 0; i < pinCount; i++) {

@@ -1,5 +1,6 @@
 package team6.iguide;
 
+import android.app.Fragment;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.provider.SearchRecentSuggestions;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -19,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,23 +54,18 @@ import java.lang.reflect.Field;
 
 public class MainActivity extends AppCompatActivity {
 
-    //Defining Variables
     private Toolbar toolbar;
-    private FloatingActionButton FAB;
     private NavigationView navigationView;
     private DrawerLayout drawerLayout;
     private MenuItem searchItem;
     private SearchView searchView;
-    private SearchRecentSuggestions suggestions;
     private MapView mv;
     private UserLocationOverlay myLocationOverlay;
-    private TilesOverlay level_0;
-    private TilesOverlay level_1;
-    private TilesOverlay level_2;
     private TilesOverlay transitLines;
+    private FloorLevel floorLevel = new FloorLevel();
     boolean placedMarkerSet = false;
     Marker placedMarker;
-    public int currentLevel;
+    final Fragment blah = new RoutingDetailFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,20 +76,20 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        userLocationFAB();
+        ProgressBar progressBar = (ProgressBar) findViewById(R.id.loadProgressBar);
+        progressBar.isShown();
 
-        suggestions = new SearchRecentSuggestions(this, SearchSuggestion.AUTHORITY, SearchSuggestion.MODE);
+
+        userLocationFAB();
 
         // Associate searchable configuration with the SearchView
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 
-
         searchView = new SearchView(getSupportActionBar().getThemedContext());
-        searchView.setSearchableInfo(searchManager
-                .getSearchableInfo(getComponentName()));
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(true);
         searchView.setQueryRefinementEnabled(true);
-        searchView.setMaxWidth(1000);
+        searchView.setMaxWidth(2000);
 
 
         SearchView.SearchAutoComplete searchAutoComplete = (SearchView.SearchAutoComplete) searchView
@@ -125,8 +123,12 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Initialize MapView
-        setMap();
+        if(mv == null) setMap();
 
+        floorLevel.loadFloorLevels(getApplicationContext(), mv);
+
+        floorLevel.changeFloorLevel(getApplicationContext(), mv, 0);
+        floorLevel.setCurrentFloorLevel(0);
 
     }
 
@@ -235,6 +237,7 @@ public class MainActivity extends AppCompatActivity {
     // This method sets up the floating action button (FAB) and handles the on click.
     private void userLocationFAB(){
         // FAB for myLocationButton
+        FloatingActionButton FAB;
         FAB = (FloatingActionButton) findViewById(R.id.myLocationButton);
         FAB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -264,6 +267,7 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onCreateOptionsMenu(menu);
     }
+
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -306,23 +310,26 @@ public class MainActivity extends AppCompatActivity {
 
 
                 if(item.getTitle().equals("Floor 1")) {
-                    if (currentLevel == 1) Toast.makeText(getApplicationContext(), "Already showing Floor 1", Toast.LENGTH_SHORT).show();
-                    else setCurrentLevel1();
+                    if (floorLevel.getCurrentFloorLevel() == 0) Toast.makeText(getApplicationContext(), "Already showing Floor 1", Toast.LENGTH_SHORT).show();
+                    else{
+                        floorLevel.changeFloorLevel(getApplicationContext(), mv, 0);
+                        floorLevel.setCurrentFloorLevel(0);
+                    }
                 }
                 if(item.getTitle().equals("Floor 2")) {
-                    if (currentLevel == 2) Toast.makeText(getApplicationContext(), "Already showing Floor 2", Toast.LENGTH_SHORT).show();
-                    else setCurrentLevel2();
+                    if (floorLevel.getCurrentFloorLevel() == 1) Toast.makeText(getApplicationContext(), "Already showing Floor 2", Toast.LENGTH_SHORT).show();
+                    else{
+                        floorLevel.changeFloorLevel(getApplicationContext(), mv, 1);
+                        floorLevel.setCurrentFloorLevel(1);
+                    }
                 }
                 if(item.getTitle().equals("Floor 3")) {
-                    if (currentLevel == 3) Toast.makeText(getApplicationContext(), "Already showing Floor 3", Toast.LENGTH_SHORT).show();
-                    else setCurrentLevel3();
+                    if (floorLevel.getCurrentFloorLevel() == 2) Toast.makeText(getApplicationContext(), "Already showing Floor 3", Toast.LENGTH_SHORT).show();
+                    else{
+                        floorLevel.changeFloorLevel(getApplicationContext(), mv, 2);
+                        floorLevel.setCurrentFloorLevel(2);
+                    }
                 }
-
-
-
-
-
-
 
 
                 return true;
@@ -335,31 +342,6 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-    public void setCurrentLevel1(){
-        //if(currentLevel)
-        mv.getOverlays().remove(level_1);
-        mv.getOverlays().remove(level_2);
-        mv.getOverlays().add(level_0);
-        mv.invalidate();
-        currentLevel = 1;
-    }
-
-    public void setCurrentLevel2(){
-        mv.getOverlays().remove(level_0);
-        mv.getOverlays().remove(level_2);
-        mv.getOverlays().add(level_1);
-        mv.invalidate();
-        currentLevel = 2;
-    }
-
-    public void setCurrentLevel3() {
-        mv.getOverlays().remove(level_0);
-        mv.getOverlays().remove(level_1);
-        mv.getOverlays().add(level_2);
-        mv.invalidate();
-        currentLevel = 3;
-    }
-
 
     public void setMap() {
 
@@ -372,36 +354,15 @@ public class MainActivity extends AppCompatActivity {
         mv.setScrollableAreaLimit(scrollLimit);
         mv.setMinZoomLevel(16);
 
-        // Create level_0 layer
-        mv.setAccessToken("sk.eyJ1IjoiY2FtbWFjZSIsImEiOiI1MDYxZjA1MDc0YzhmOTRhZWFlODBlNGVlZDgzMTcxYSJ9.Ryw8G5toQp5yloce36hu2A");
-        MapboxTileLayer level0Overlay = new MapboxTileLayer("cammace.nc76p7k8");
-        MapTileLayerBase level0OverlayBase = new MapTileLayerBasic(getApplicationContext(), level0Overlay, mv);
-        level_0 = new TilesOverlay(level0OverlayBase);
-        level_0.setDrawLoadingTile(false);
-        level_0.setLoadingBackgroundColor(Color.TRANSPARENT);
-
-        // Create level_1 layer
-        mv.setAccessToken("sk.eyJ1IjoiY2FtbWFjZSIsImEiOiI1MDYxZjA1MDc0YzhmOTRhZWFlODBlNGVlZDgzMTcxYSJ9.Ryw8G5toQp5yloce36hu2A");
-        MapboxTileLayer level1Overlay = new MapboxTileLayer("cammace.nc77c38k");
-        MapTileLayerBase level1OverlayBase = new MapTileLayerBasic(getApplicationContext(), level1Overlay, mv);
-        level_1 = new TilesOverlay(level1OverlayBase);
-        level_1.setDrawLoadingTile(false);
-        level_1.setLoadingBackgroundColor(Color.TRANSPARENT);
-
-        // Create level_2 layer
-        mv.setAccessToken("sk.eyJ1IjoiY2FtbWFjZSIsImEiOiI1MDYxZjA1MDc0YzhmOTRhZWFlODBlNGVlZDgzMTcxYSJ9.Ryw8G5toQp5yloce36hu2A");
-        MapboxTileLayer level2Overlay = new MapboxTileLayer("cammace.nc77kk5a");
-        MapTileLayerBase level2OverlayBase = new MapTileLayerBasic(getApplicationContext(), level2Overlay, mv);
-        level_2 = new TilesOverlay(level2OverlayBase);
-        level_2.setDrawLoadingTile(false);
-        level_2.setLoadingBackgroundColor(Color.TRANSPARENT);
-
-
         MapboxTileLayer transitLineOverlay = new MapboxTileLayer("cammace.n2jn0loh");
         MapTileLayerBase test = new MapTileLayerBasic(getApplicationContext(), transitLineOverlay, mv);
         transitLines = new TilesOverlay(test);
         transitLines.setDrawLoadingTile(false);
         transitLines.setLoadingBackgroundColor(Color.TRANSPARENT);
+
+
+
+
 
         //DrawRoute drawRoute = new DrawRoute();
         //mv.getOverlays().add(drawRoute)
@@ -438,7 +399,6 @@ public class MainActivity extends AppCompatActivity {
                 //String longitude = Double.toString(pressLatLon.getLongitude());
                 //mv.clear(); // Clears the map when press occurs
                 mv.closeCurrentTooltip();
-                System.out.println("Single press");
 
 
                 return true;
@@ -494,6 +454,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void displayRouting(Context context, MapView mapview, double desLat, double desLon, LatLng currentLocation){
+
+        Graphhopper graphhopper = new Graphhopper();
+        graphhopper.executeRoute(context, mapview, desLat, desLon, currentLocation);
+
+        //getFragmentManager().beginTransaction().add(R.id.route_detail_container, blah).commit();
+
+    }
+
     //TODO Fix so that when app is closed it stops getting user location
     @Override
     protected void onResume() {
@@ -506,4 +475,11 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         myLocationOverlay.disableMyLocation();
     }
+
+
+
+
+
+
+
 }

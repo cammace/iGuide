@@ -1,7 +1,11 @@
 package team6.iguide;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Bundle;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.RequestQueue;
@@ -33,7 +37,7 @@ public class Graphhopper{
 
         mapContext = context;
         mv = mapView;
-System.out.println(line);
+
         if(line == null)
             line = new PathOverlay(mapContext.getResources().getColor(R.color.RoutePrimaryColor), 10);
         else line.clearPath();
@@ -58,6 +62,8 @@ System.out.println(line);
 
         mRequestQueue = Volley.newRequestQueue(context);
         fetchJsonResponse(graphhopperURI);
+
+
     }
 
     private String buildURI(String dLat, String dLon, String uLat, String uLon){
@@ -91,6 +97,13 @@ System.out.println(line);
                 drawRoute();
                 System.out.println(routeInfo.getPaths().get(0).getDistance());
                 System.out.println(routeInfo.getPaths().get(0).getTime());
+
+                //Bundle bundle = new Bundle();
+                //bundle.putLong("TIME", routeInfo.getPaths().get(0).getTime());
+                //System.out.println(mainActivity.blah);
+
+
+
             }
         }, new Response.ErrorListener() {
 
