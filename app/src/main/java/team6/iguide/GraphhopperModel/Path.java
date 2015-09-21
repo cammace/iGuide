@@ -1,11 +1,12 @@
 package team6.iguide.GraphhopperModel;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Path {
+public class Path implements Serializable {
 
     @Expose
     private List<Instruction> instructions = new ArrayList<Instruction>();

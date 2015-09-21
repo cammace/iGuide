@@ -4,4 +4,5 @@
     <color name="PrimaryDarkColor">#1976D2</color>
     <color name="RoutePrimaryColor">#46C0FC</color>
     <color name="RouteDarkColor">#2895E1</color>
+    <color name="BeginDirectionFABColor">#17C749</color>
 </resources>

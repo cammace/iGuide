@@ -30,7 +30,7 @@ public class Settings extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 NavUtils.navigateUpFromSameTask(Settings.this);
-                overridePendingTransition(R.anim.pull_out, R.anim.hold);
+               // overridePendingTransition(R.anim.pull_out, R.anim.hold);
             }
         });
 

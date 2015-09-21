@@ -1,10 +1,11 @@
 package team6.iguide.GraphhopperModel;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import com.google.gson.annotations.Expose;
 
-public class Points {
+public class Points implements Serializable {
 
     @Expose
     private List<List<Double>> coordinates = new ArrayList<List<Double>>();

@@ -172,6 +172,7 @@ public class DetailedInfoActivity extends AppCompatActivity{
 
         else if(hours.contains("Mo-Fr ") && (calendar.get(Calendar.DAY_OF_WEEK) >=2) &&(calendar.get(Calendar.DAY_OF_WEEK) <= 6) && hours.contains(";")) formatedHours = hours.substring(hours.indexOf("Mo-Fr ")+6, hours.indexOf(";"));
         else if(hours.contains("Mo-Th ") && (calendar.get(Calendar.DAY_OF_WEEK) >=2) &&(calendar.get(Calendar.DAY_OF_WEEK) <= 5)) formatedHours = hours.substring(hours.indexOf("Mo-Th ")+6, hours.indexOf(";"));
+        //else if(hours.contains("Tu-Sa ") && (calendar.get(Calendar.DAY_OF_WEEK) >=3) &&(calendar.get(Calendar.DAY_OF_WEEK) <= 5)) formatedHours = hours.substring(hours.indexOf("Mo-Th ")+6, hours.indexOf(";"));)
         else {
             formatedHours = hours;
             return;

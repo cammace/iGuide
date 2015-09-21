@@ -41,6 +41,7 @@
             android:paddingEnd="16dp"
             android:paddingTop="4dp"
             android:text="title"
+            android:singleLine="true"
             android:transitionName="detailed_title"
             android:textColor="#000000"
             android:background="@color/white"/>
@@ -54,6 +55,7 @@
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:paddingBottom="4dp"
+            android:singleLine="true"
             android:text="ref"
             android:textColor="#727272"
             android:background="@color/white"/>

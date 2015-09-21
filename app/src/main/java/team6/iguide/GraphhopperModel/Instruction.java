@@ -1,10 +1,11 @@
 package team6.iguide.GraphhopperModel;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import com.google.gson.annotations.Expose;
 
-public class Instruction {
+public class Instruction implements Serializable {
 
     @Expose
     private Double distance;

@@ -18,17 +18,11 @@
             layout="@layout/tool_bar"
             />
 
-        <ProgressBar
-            android:id="@+id/loadProgressBar"
-            android:layout_width="match_parent"
-            android:layout_height="4dp"
-            android:layout_below="@+id/toolbar"
-            android:indeterminate="true" />
-
         <FrameLayout
             android:id="@+id/map_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+
 
             <com.mapbox.mapboxsdk.views.MapView
                 android:id="@+id/mapview"

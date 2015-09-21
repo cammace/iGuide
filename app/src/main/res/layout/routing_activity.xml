@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:mapbox="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.Toolbar
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:background="@color/PrimaryColor"
+        android:elevation="4dp"
+        android:id="@+id/routing_toolbar">
+
+        <LinearLayout
+            android:paddingTop="36dp"
+            android:paddingBottom="16dp"
+            android:paddingStart="24dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/route_time"
+                    android:textSize="34sp"
+                    android:text="Time"
+                    android:textColor="#FFF"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/route_distance"
+                    android:textSize="20sp"
+                    android:text="distance"
+                    android:textColor="#FFF"/>
+
+        </LinearLayout>
+
+    </android.support.v7.widget.Toolbar>
+
+    <com.mapbox.mapboxsdk.views.MapView
+        android:id="@+id/mapview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/routing_toolbar"
+        mapbox:mapid="cammace.mk9h5chi"
+        mapbox:accessToken="sk.eyJ1IjoiY2FtbWFjZSIsImEiOiI1MDYxZjA1MDc0YzhmOTRhZWFlODBlNGVlZDgzMTcxYSJ9.Ryw8G5toQp5yloce36hu2A"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/begin_direction_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/routing_toolbar"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="-28dp"
+        android:src="@drawable/ic_done_white_24dp"
+        android:clickable="true"
+        app:borderWidth="0dp"
+        app:elevation="12dp"
+        app:pressedTranslationZ="12dp"
+        app:fabSize="normal"
+        />
+
+
+    </RelativeLayout>

@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -14,12 +15,14 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
+import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.PathOverlay;
 import com.mapbox.mapboxsdk.views.MapView;
 
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.List;
 
 import team6.iguide.GraphhopperModel.GraphhopperModel;
@@ -29,24 +32,19 @@ public class Graphhopper{
     private RequestQueue mRequestQueue;
     MapView mv;
     GraphhopperModel routeInfo;
-    static PathOverlay line;
+    //static PathOverlay line;
     Context mapContext;
-    boolean routeLineVisible;
 
     public void executeRoute(Context context, MapView mapView, double lat, double lon, LatLng userLocation){
 
         mapContext = context;
         mv = mapView;
-
+/*
         if(line == null)
             line = new PathOverlay(mapContext.getResources().getColor(R.color.RoutePrimaryColor), 10);
         else line.clearPath();
+*/
 
-            for (int i = 0; i < mv.getOverlays().size(); i++){
-                System.out.println(mv.getOverlays().get(i));
-                //if(mv.getOverlays().get(i).equals(line))
-                    //mv.getOverlays().remove(line);
-                }
 
 
 
@@ -59,6 +57,7 @@ public class Graphhopper{
 
         // Create the Graphhopper API URI
         String graphhopperURI = buildURI(destinationLat, destinationLon, userLat, userLon);
+        //System.out.println(graphhopperURI);
 
         mRequestQueue = Volley.newRequestQueue(context);
         fetchJsonResponse(graphhopperURI);
@@ -94,9 +93,12 @@ public class Graphhopper{
                 String graphhopperData = response.toString();
 
                 routeInfo = gson.fromJson(graphhopperData, GraphhopperModel.class);
-                drawRoute();
-                System.out.println(routeInfo.getPaths().get(0).getDistance());
-                System.out.println(routeInfo.getPaths().get(0).getTime());
+                Intent intent = new Intent(mapContext, RoutingActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("ROUTING_RESULTS", routeInfo);
+                intent.putExtras(bundle);
+                mapContext.startActivity(intent);
+                //drawRoute();
 
                 //Bundle bundle = new Bundle();
                 //bundle.putLong("TIME", routeInfo.getPaths().get(0).getTime());
@@ -123,22 +125,6 @@ public class Graphhopper{
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-    }
-
-
-    public void drawRoute(){
-
-        //line = new PathOverlay(mapContext.getResources().getColor(R.color.RoutePrimaryColor), 10);
-
-        for(int a =0; a<routeInfo.getPaths().get(0).getPoints().getCoordinates().size(); a++ )
-                line.addPoint(routeInfo.getPaths().get(0).getPoints().getCoordinates().get(a).get(1),
-                        routeInfo.getPaths().get(0).getPoints().getCoordinates().get(a).get(0));
-
-
-        mv.getOverlays().add(line);
-        mv.invalidate();
-
-        routeLineVisible = true;
     }
 
 }

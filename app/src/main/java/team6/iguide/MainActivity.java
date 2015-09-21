@@ -1,16 +1,15 @@
 package team6.iguide;
 
-import android.app.Fragment;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -21,26 +20,22 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.api.ILatLng;
 import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.overlay.GpsLocationProvider;
-import com.mapbox.mapboxsdk.overlay.ItemizedIconOverlay;
 import com.mapbox.mapboxsdk.overlay.MapEventsOverlay;
 import com.mapbox.mapboxsdk.overlay.MapEventsReceiver;
-import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.overlay.TilesOverlay;
-import com.mapbox.mapboxsdk.overlay.UserLocationOverlay;
 import com.mapbox.mapboxsdk.tileprovider.MapTileLayerBase;
 import com.mapbox.mapboxsdk.tileprovider.MapTileLayerBasic;
 import com.mapbox.mapboxsdk.tileprovider.tilesource.MapboxTileLayer;
 import com.mapbox.mapboxsdk.views.MapView;
 
 import java.lang.reflect.Field;
+
 
 // http://stackoverflow.com/questions/20610253/how-to-enable-longclick-on-map-with-osmdroid-in-supportmapfragment
 
@@ -60,12 +55,8 @@ public class MainActivity extends AppCompatActivity {
     private MenuItem searchItem;
     private SearchView searchView;
     private MapView mv;
-    private UserLocationOverlay myLocationOverlay;
+    //private UserLocationOverlay myLocationOverlay;
     private TilesOverlay transitLines;
-    private FloorLevel floorLevel = new FloorLevel();
-    boolean placedMarkerSet = false;
-    Marker placedMarker;
-    final Fragment blah = new RoutingDetailFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,11 +67,42 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        ProgressBar progressBar = (ProgressBar) findViewById(R.id.loadProgressBar);
-        progressBar.isShown();
-
-
         userLocationFAB();
+
+
+        //System.out.println(getStatusBarHeight());
+/*
+        final ActionBar.LayoutParams lp = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 30);
+        final ProgressBar progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        progressBar.setIndeterminate(true);
+        progressBar.setLayoutParams(lp);
+        progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, android.graphics.PorterDuff.Mode.MULTIPLY);
+
+        final ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
+        decorView.addView(progressBar);
+
+        ViewTreeObserver observer = progressBar.getViewTreeObserver();
+        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                View contentView = decorView.findViewById(android.R.id.content);
+                progressBar.setY(contentView.getY() + toolbar.getHeight() + getStatusBarHeight() -15);
+
+                ViewTreeObserver observer = progressBar.getViewTreeObserver();
+                observer.removeGlobalOnLayoutListener(this);
+            }
+        });
+
+*/
+
+        //getSupportActionBar().getHeight();
+
+
+
+
+
+
+
 
         // Associate searchable configuration with the SearchView
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
@@ -124,11 +146,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize MapView
         if(mv == null) setMap();
-
-        floorLevel.loadFloorLevels(getApplicationContext(), mv);
-
-        floorLevel.changeFloorLevel(getApplicationContext(), mv, 0);
-        floorLevel.setCurrentFloorLevel(0);
 
     }
 
@@ -192,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
                         intent = new Intent(MainActivity.this, Settings.class);
                         startActivity(intent);
 
-                        overridePendingTransition(R.anim.pull_in, R.anim.hold);
+                        //overridePendingTransition(R.anim.pull_in, R.anim.hold);
 
                         return true;
                     case R.id.help:
@@ -290,13 +307,6 @@ public class MainActivity extends AppCompatActivity {
 
         int id = item.getItemId();
 
-        if(id == R.id.directions){
-            for(int i=0; i < mv.getOverlays().size(); i++){
-                System.out.println(mv.getOverlays().get(i).toString());
-            }
-
-        }
-
         if (id == R.id.floor) {
 
         //Creating the instance of PopupMenu
@@ -310,25 +320,29 @@ public class MainActivity extends AppCompatActivity {
 
 
                 if(item.getTitle().equals("Floor 1")) {
+                    System.out.println("Floor 1");
+                    /*
                     if (floorLevel.getCurrentFloorLevel() == 0) Toast.makeText(getApplicationContext(), "Already showing Floor 1", Toast.LENGTH_SHORT).show();
                     else{
                         floorLevel.changeFloorLevel(getApplicationContext(), mv, 0);
                         floorLevel.setCurrentFloorLevel(0);
-                    }
+                    }*/
                 }
                 if(item.getTitle().equals("Floor 2")) {
-                    if (floorLevel.getCurrentFloorLevel() == 1) Toast.makeText(getApplicationContext(), "Already showing Floor 2", Toast.LENGTH_SHORT).show();
+                    System.out.println("Floor 2");
+                    /*if (floorLevel.getCurrentFloorLevel() == 1) Toast.makeText(getApplicationContext(), "Already showing Floor 2", Toast.LENGTH_SHORT).show();
                     else{
                         floorLevel.changeFloorLevel(getApplicationContext(), mv, 1);
                         floorLevel.setCurrentFloorLevel(1);
-                    }
+                    }*/
                 }
                 if(item.getTitle().equals("Floor 3")) {
-                    if (floorLevel.getCurrentFloorLevel() == 2) Toast.makeText(getApplicationContext(), "Already showing Floor 3", Toast.LENGTH_SHORT).show();
+                    System.out.println("Floor 3");
+                    /*if (floorLevel.getCurrentFloorLevel() == 2) Toast.makeText(getApplicationContext(), "Already showing Floor 3", Toast.LENGTH_SHORT).show();
                     else{
                         floorLevel.changeFloorLevel(getApplicationContext(), mv, 2);
                         floorLevel.setCurrentFloorLevel(2);
-                    }
+                    }*/
                 }
 
 
@@ -348,7 +362,16 @@ public class MainActivity extends AppCompatActivity {
         mv = (MapView) this.findViewById(R.id.mapview);
         mv.setCenter(new LatLng(29.7199489, -95.3422334));
         mv.setZoom(17);
-        mv.setUserLocationEnabled(true);
+
+       // mv.getUserLocationOverlay().setDirectionArrowBitmap();
+
+
+
+        //myLocationOverlay = new UserLocationOverlay(new GpsLocationProvider(this), mv);
+        //myLocationOverlay.enableMyLocation();
+       // myLocationOverlay.setDrawAccuracyEnabled(true);
+
+        //mv.getOverlays().add(myLocationOverlay);
 
         BoundingBox scrollLimit = new BoundingBox(29.731896194504913, -95.31928449869156, 29.709354854765827, -95.35668790340424);
         mv.setScrollableAreaLimit(scrollLimit);
@@ -364,8 +387,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        //DrawRoute drawRoute = new DrawRoute();
-        //mv.getOverlays().add(drawRoute)
 
         //PathEffect pathEffect = new PathDashPathEffect(makePathDash(), 12, 10, PathDashPathEffect.Style.MORPH);
 
@@ -406,18 +427,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean longPressHelper(ILatLng pressLatLon) {
-                if(placedMarkerSet) mv.removeMarker(placedMarker);
-
-                placedMarker = new Marker("test", "test", new LatLng(pressLatLon.getLatitude(), pressLatLon.getLongitude()));
-                //placedMarker.setToolTip(new CustomInfoWindow(MainActivity.this, mv, null, 0));
-                placedMarker.setMarker(MainActivity.this.getDrawable(R.drawable.green_pin));
-                mv.addMarker(placedMarker);
-                placedMarkerSet = true;
-
-                Graphhopper graphhopper = new Graphhopper();
-                graphhopper.executeRoute(MainActivity.this, mv,pressLatLon.getLatitude(),pressLatLon.getLongitude(), mv.getUserLocation());
-
-
                 return true;
             }
         };
@@ -425,16 +434,7 @@ public class MainActivity extends AppCompatActivity {
         MapEventsOverlay gestureOverlay = new MapEventsOverlay(this, mReceive);
         mv.getOverlays().add(gestureOverlay);
 
-        myLocationOverlay = new UserLocationOverlay(new GpsLocationProvider(this), mv);
-        myLocationOverlay.enableMyLocation();
-        myLocationOverlay.setDrawAccuracyEnabled(true);
 
-
-       // mv.getUserLocationOverlay().setDirectionArrowBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.red_pin));
-       // mv.getUserLocationOverlay().setPersonBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.green_pin));
-       // mv.getUserLocationOverlay().setTrackingMode(UserLocationOverlay.TrackingMode.FOLLOW_BEARING);
-       // mv.getUserLocationOverlay().setTrackingMode(UserLocationOverlay.TrackingMode.NONE);
-        mv.getOverlays().add(myLocationOverlay);
 
     }
 
@@ -463,19 +463,30 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    //TODO Fix so that when app is closed it stops getting user location
     @Override
     protected void onResume() {
         super.onResume();
-        myLocationOverlay.enableMyLocation();
+        mv.setUserLocationEnabled(true);
+        mv.getUserLocationOverlay().setDirectionArrowBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.location_arrow));
+        mv.getUserLocationOverlay().setPersonBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.location_dot));
+        //mv.getUserLocationOverlay().setTrackingMode(UserLocationOverlay.TrackingMode.FOLLOW_BEARING);
+        //mv.getUserLocationOverlay().setTrackingMode(UserLocationOverlay.TrackingMode.NONE);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        myLocationOverlay.disableMyLocation();
+        mv.setUserLocationEnabled(false);
     }
 
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
 
 
 

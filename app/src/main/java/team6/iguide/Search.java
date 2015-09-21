@@ -11,12 +11,15 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
+import com.mapbox.mapboxsdk.api.ILatLng;
+import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.views.MapView;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import team6.iguide.OverpassModel.OverpassElement;
@@ -30,6 +33,7 @@ public class Search {
     Context mapContext;
     String boundingBox = "(29.709354854765827,-95.35668790340424,29.731896194504913,-95.31928449869156);";
     FloorLevel floorLevel = new FloorLevel();
+    ArrayList<LatLng> resultBBList = new ArrayList<>();
 
     public void executeSearch(Context context, MapView mapView, String value){
 
@@ -112,31 +116,34 @@ public class Search {
 
             if (pinCount == 1) {
                 // Check if the search returned a building
-                if (q.get(0).getTags().getBuilding() != null) {
+                if (q.get(0).getTags().getBuilding() != null || q.get(0).getTags().getLanduse() != null || q.get(0).getTags().getLeisure() != null) {
                     Marker marker = new Marker(q.get(0).getTags().getName(), q.get(0).getTags().getRef(), new LatLng(
                             q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
                     marker.setToolTip(new CustomInfoWindow(mapContext, mv, q, 0));
                     marker.setMarker(mapContext.getResources().getDrawable(R.drawable.red_pin));
                     mv.addMarker(marker);
-                    mv.getController().animateTo(new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
-                    mv.getController().setZoom(19);
+                    //mv.getController().animateTo(new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
+                    //mv.getController().setZoom(19);
+                    mv.getController().setZoomAnimated(19, new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()), true, true);
+
                 }
                 // Check if the search returned a room
                 else if (q.get(0).getTags().getIndoor() != null) {
 
-                    if(floorLevel.getCurrentFloorLevel() != Integer.parseInt(q.get(0).getTags().getLevel())){
-                        System.out.println(Integer.parseInt(q.get(0).getTags().getLevel()));
-                        floorLevel.changeFloorLevel(mapContext, mv, Integer.parseInt(q.get(0).getTags().getLevel()));
-                        floorLevel.setCurrentFloorLevel(Integer.parseInt(q.get(0).getTags().getLevel()));
-                    }
+                    //if(floorLevel.getCurrentFloorLevel() != Integer.parseInt(q.get(0).getTags().getLevel())){
+                        //System.out.println(Integer.parseInt(q.get(0).getTags().getLevel()));
+                        //floorLevel.changeFloorLevel(mapContext, mv, Integer.parseInt(q.get(0).getTags().getLevel()));
+                        //floorLevel.setCurrentFloorLevel(Integer.parseInt(q.get(0).getTags().getLevel()));
+                    //}
 
                     Marker marker = new Marker(q.get(0).getTags().getName(), q.get(0).getTags().getRef(), new LatLng(
                             q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
                     marker.setToolTip(new CustomInfoWindow(mapContext, mv, q, 0));
                     marker.setMarker(mapContext.getResources().getDrawable(R.drawable.red_pin));
                     mv.addMarker(marker);
-                    mv.getController().animateTo(new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
-                    mv.getController().setZoom(21);
+                    //mv.getController().animateTo(new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
+                    //mv.getController().setZoom(21);
+                    mv.getController().setZoomAnimated(19, new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()), true, true);
 
                 }
             } else {
@@ -147,12 +154,71 @@ public class Search {
                         marker.setToolTip(new CustomInfoWindow(mapContext, mv, q, i));
                         marker.setMarker(mapContext.getResources().getDrawable(R.drawable.red_pin));
                         mv.addMarker(marker);
-                        mv.getController().setZoom(17);
+
+                        resultBBList.add(new LatLng(q.get(i).getCenter().getLat(), q.get(i).getCenter().getLon()));
+
+                        //mv.getController().setZoom(17);
                     }
+                }
+                //BoundingBox resultBB = new BoundingBox(BoundingBox.fromLatLngs(resultBBList));
+                //mv.zoomToBoundingBox(resultBB);
+
+                mv.zoomToBoundingBox(findBoundingBoxForGivenLocations(resultBBList), true, true);
+
+                //System.out.println(resultBB);
+
+            }
+        }
+
+    }
+
+
+    public BoundingBox findBoundingBoxForGivenLocations(ArrayList<LatLng> coordinates)
+    {
+        double west = 0.0;
+        double east = 0.0;
+        double north = 0.0;
+        double south = 0.0;
+
+        for (int lc = 0; lc < coordinates.size(); lc++)
+        {
+            LatLng loc = coordinates.get(lc);
+            if (lc == 0)
+            {
+                north = loc.getLatitude();
+                south = loc.getLatitude();
+                west = loc.getLongitude();
+                east = loc.getLongitude();
+            }
+            else
+            {
+                if (loc.getLatitude() > north)
+                {
+                    north = loc.getLatitude();
+                }
+                else if (loc.getLatitude() < south)
+                {
+                    south = loc.getLatitude();
+                }
+                if (loc.getLongitude() < west)
+                {
+                    west = loc.getLongitude();
+                }
+                else if (loc.getLongitude() > east)
+                {
+                    east = loc.getLongitude();
                 }
             }
         }
 
+        // OPTIONAL - Add some extra "padding" for better map display
+        double padding = 0.005;
+        north = north + padding;
+        south = south - padding;
+        west = west - padding;
+        east = east + padding;
+
+        return new BoundingBox(north, east, south, west);
     }
 
 }

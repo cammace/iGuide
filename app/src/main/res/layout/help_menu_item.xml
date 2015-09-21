@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<!-- padding used to be 60dp -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 android:layout_width="match_parent"
 android:layout_height="wrap_content"
 android:layout_centerHorizontal="true"
 android:orientation="horizontal"
-android:paddingLeft="60dp"
-android:paddingRight="60dp"
+android:paddingLeft="@dimen/abc_list_item_padding_horizontal_material"
+android:paddingRight="@dimen/abc_list_item_padding_horizontal_material"
     android:paddingTop="10dp"
     android:paddingBottom="10dp">
 

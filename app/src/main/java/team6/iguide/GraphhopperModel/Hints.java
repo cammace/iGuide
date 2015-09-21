@@ -3,7 +3,9 @@ package team6.iguide.GraphhopperModel;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Hints {
+import java.io.Serializable;
+
+public class Hints implements Serializable {
 
     @SerializedName("visited_nodes.average")
     @Expose

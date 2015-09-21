@@ -40,8 +40,7 @@
 
         </activity>
 
-        <!-- Search Results Activity-->
-
+        <!-- Detailed info Activity-->
         <activity
             android:name=".DetailedInfoActivity"
             android:label="@string/title_activity_detailed_info"
@@ -60,5 +59,16 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="team6.iguide.MainActivity" />
         </activity>
+
+        <!-- Routing Activity -->
+        <activity
+            android:name=".RoutingActivity"
+            android:label="@string/title_activity_routing"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="team6.iguide.MainActivity" />
+        </activity>
+
     </application>
 </manifest>

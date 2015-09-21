@@ -55,6 +55,10 @@ public class OverpassTags implements Serializable{
     private String openingHours;
     @Expose
     private String image;
+    @Expose
+    private String landuse;
+    @Expose
+    private String leisure;
 
     public String getIndoor() {
         return indoor;
@@ -215,6 +219,24 @@ public class OverpassTags implements Serializable{
     public void setImage(String image) {
         this.image = image;
     }
+
+    public String getLanduse(){
+        return landuse;
+    }
+
+    public void setLanduse(String landuse){
+        this.landuse = landuse;
+    }
+
+    public String getLeisure(){
+        return leisure;
+    }
+
+    public void setLeisure(String leisure){
+        this.leisure = leisure;
+    }
+
+
 
 
 }
