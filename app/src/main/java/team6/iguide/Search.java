@@ -2,6 +2,7 @@ package team6.iguide;
 
 import android.content.Context;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -34,8 +35,12 @@ public class Search {
     String boundingBox = "(29.709354854765827,-95.35668790340424,29.731896194504913,-95.31928449869156);";
     FloorLevel floorLevel = new FloorLevel();
     ArrayList<LatLng> resultBBList = new ArrayList<>();
+    View progressBar;
 
-    public void executeSearch(Context context, MapView mapView, String value){
+    public void executeSearch(Context context, MapView mapView, String value, View PB){
+
+        progressBar = PB;
+        progressBar.setVisibility(View.VISIBLE);
 
         mv = mapView;
         mapContext = context;
@@ -71,6 +76,8 @@ public class Search {
 
                 results = gson.fromJson(overpassData, OverpassModel.class);
                 showSearchResults();
+                progressBar.setVisibility(View.INVISIBLE);
+
 
             }
         }, new Response.ErrorListener() {
@@ -78,7 +85,9 @@ public class Search {
             @Override
             public void onErrorResponse(VolleyError error) {
                 // TODO Auto-generated method stub
-                System.out.println(error);
+                Log.e("Search.Volley", "onErrorResponse ", error);
+                Toast.makeText(mapContext, "Search Timed out, Try again.", Toast.LENGTH_SHORT).show();
+                progressBar.setVisibility(View.INVISIBLE);
 
             }
         });

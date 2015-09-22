@@ -10,6 +10,7 @@
         -->
         <item name="colorAccent">@color/PrimaryColor</item>
         <item name="android:windowContentTransitions">true</item>
+
         <!-- Customize your theme here. -->
     </style>
 

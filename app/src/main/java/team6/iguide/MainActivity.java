@@ -1,10 +1,15 @@
 package team6.iguide;
 
+import android.app.ActionBar;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.RoundRectShape;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.design.widget.FloatingActionButton;
@@ -19,7 +24,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -55,8 +63,8 @@ public class MainActivity extends AppCompatActivity {
     private MenuItem searchItem;
     private SearchView searchView;
     private MapView mv;
-    //private UserLocationOverlay myLocationOverlay;
     private TilesOverlay transitLines;
+    public  View progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,37 +77,8 @@ public class MainActivity extends AppCompatActivity {
 
         userLocationFAB();
 
-
-        //System.out.println(getStatusBarHeight());
-/*
-        final ActionBar.LayoutParams lp = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 30);
-        final ProgressBar progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
-        progressBar.setIndeterminate(true);
-        progressBar.setLayoutParams(lp);
-        progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, android.graphics.PorterDuff.Mode.MULTIPLY);
-
-        final ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
-        decorView.addView(progressBar);
-
-        ViewTreeObserver observer = progressBar.getViewTreeObserver();
-        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                View contentView = decorView.findViewById(android.R.id.content);
-                progressBar.setY(contentView.getY() + toolbar.getHeight() + getStatusBarHeight() -15);
-
-                ViewTreeObserver observer = progressBar.getViewTreeObserver();
-                observer.removeGlobalOnLayoutListener(this);
-            }
-        });
-
-*/
-
-        //getSupportActionBar().getHeight();
-
-
-
-
+        progressBar = createProgressBar();
+        progressBar.setVisibility(View.INVISIBLE);
 
 
 
@@ -449,15 +428,22 @@ public class MainActivity extends AppCompatActivity {
 
             Search search = new Search();
             // Get the search query
-            search.executeSearch(this, mv, query);
+            //progressBar.setVisibility(View.VISIBLE);
+            search.executeSearch(this, mv, query, progressBar);
+
 
         }
     }
 
-    public void displayRouting(Context context, MapView mapview, double desLat, double desLon, LatLng currentLocation){
+    public void displayRouting(Context context, MapView mapview, double desLat, double desLon){
 
+        if(mapview == null) mapview = mv;
+        if(context == null) context = this;
+
+        System.out.println(mapview);
+        System.out.println(mapview.getUserLocationOverlay().getMyLocation());
         Graphhopper graphhopper = new Graphhopper();
-        graphhopper.executeRoute(context, mapview, desLat, desLon, currentLocation);
+        graphhopper.executeRoute(context, mapview, desLat, desLon, mapview.getUserLocationOverlay().getMyLocation());
 
         //getFragmentManager().beginTransaction().add(R.id.route_detail_container, blah).commit();
 
@@ -471,12 +457,38 @@ public class MainActivity extends AppCompatActivity {
         mv.getUserLocationOverlay().setPersonBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.location_dot));
         //mv.getUserLocationOverlay().setTrackingMode(UserLocationOverlay.TrackingMode.FOLLOW_BEARING);
         //mv.getUserLocationOverlay().setTrackingMode(UserLocationOverlay.TrackingMode.NONE);
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         mv.setUserLocationEnabled(false);
+    }
+
+    public View createProgressBar() {
+        final ActionBar.LayoutParams lp = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 30);
+        final ProgressBar PB = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        PB.setIndeterminate(true);
+        PB.setLayoutParams(lp);
+        PB.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+
+
+        final ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
+        decorView.addView(PB);
+
+        ViewTreeObserver observer = PB.getViewTreeObserver();
+        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                View contentView = decorView.findViewById(android.R.id.content);
+                PB.setY(contentView.getY() + toolbar.getHeight() + getStatusBarHeight() -15);
+
+                ViewTreeObserver observer = PB.getViewTreeObserver();
+                observer.removeGlobalOnLayoutListener(this);
+            }
+        });
+        return PB;
     }
 
     public int getStatusBarHeight() {

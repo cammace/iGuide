@@ -33,12 +33,22 @@ public class CustomInfoWindow extends InfoWindow {
     String ref;
     String address;
     String country;
+    Double desLat;
+    Double desLon;
 
     public CustomInfoWindow(Context context, final MapView mv, final List<OverpassElement> searchResults, final int listPosition) {
         super(R.layout.infowindow_custom, mv);
         this.mContext = context;
         getView().findViewById(R.id.mainpanal).setClipToOutline(true);
         mView.setElevation(24);
+
+        if(searchResults.get(listPosition).getType().equals("node")){
+            desLat = searchResults.get(listPosition).getLat();
+            desLon = searchResults.get(listPosition).getLon();
+        }else{
+            desLat = searchResults.get(listPosition).getCenter().getLat();
+            desLon = searchResults.get(listPosition).getCenter().getLon();
+        }
 
         Button routing = (Button)mView.findViewById(R.id.routing_button);
         routing.setOnClickListener(new View.OnClickListener() {
@@ -52,8 +62,8 @@ public class CustomInfoWindow extends InfoWindow {
                 //TODO check to make sure user is location is within bounding box, otherwise return;
 
                 MainActivity mainActivity = new MainActivity();
-                if(searchResults.get(listPosition).getType().equals("node")) mainActivity.displayRouting(mView.getContext(), mv, searchResults.get(listPosition).getLat(), searchResults.get(listPosition).getLon(), mv.getUserLocation());
-                else mainActivity.displayRouting(mView.getContext(), mv, searchResults.get(listPosition).getCenter().getLat(), searchResults.get(listPosition).getCenter().getLon(), mv.getUserLocation());
+                mainActivity.displayRouting(mView.getContext(), mv, desLat, desLon);
+
 
                 close();
             }
@@ -97,6 +107,8 @@ public class CustomInfoWindow extends InfoWindow {
                     bundle.putString("WIKI", searchResults.get(listPosition).getTags().getWikipedia());
                     bundle.putString("HOURS", searchResults.get(listPosition).getTags().getOpeningHours());
                     bundle.putString("IMAGE", searchResults.get(listPosition).getTags().getImage());
+                    bundle.putDouble("DESLAT", desLat);
+                    bundle.putDouble("DESLON", desLon);
 
                     Intent intent = new Intent(mView.getContext(), DetailedInfoActivity.class);
                     intent.putExtras(bundle);

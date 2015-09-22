@@ -65,6 +65,8 @@ public class DetailedInfoActivity extends AppCompatActivity{
     private Date dateCompareOne;
     private Date dateCompareTwo;
     String OC;
+    Double desLat;
+    Double desLon;
 
     SimpleDateFormat inputParser = new SimpleDateFormat(inputFormat, Locale.US);
 
@@ -104,6 +106,8 @@ public class DetailedInfoActivity extends AppCompatActivity{
         fax = bundle.getString("FAX");
         hours = bundle.getString("HOURS");
         image = bundle.getString("IMAGE");
+        desLat = bundle.getDouble("DESLAT");
+        desLon = bundle.getDouble("DESLON");
 
         if(image != null) new DownloadImageTask((ImageView) findViewById(R.id.building_image)).execute(image);
 
@@ -287,6 +291,8 @@ public class DetailedInfoActivity extends AppCompatActivity{
             public void onClick(View v) {
 
                 System.out.println("begin routing");
+                //MainActivity mainActivity = new MainActivity();
+                //mainActivity.displayRouting(getApplicationContext(), null, desLat, desLon);
 
 
             }
