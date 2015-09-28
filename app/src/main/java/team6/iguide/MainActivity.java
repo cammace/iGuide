@@ -11,6 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.SearchRecentSuggestions;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -65,6 +66,11 @@ public class MainActivity extends AppCompatActivity {
     private MapView mv;
     private TilesOverlay transitLines;
     public  View progressBar;
+    FloorLevel floorLevel = new FloorLevel();
+    int currentFloor;
+    TilesOverlay level_0;
+    TilesOverlay level_1;
+    TilesOverlay level_2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,9 +128,11 @@ public class MainActivity extends AppCompatActivity {
 
         navigationDrawer();
 
-
         // Initialize MapView
         if(mv == null) setMap();
+
+        changeFloorLevel(getApplicationContext(), mv, 0);
+        currentFloor = 0;
 
     }
 
@@ -159,12 +167,37 @@ public class MainActivity extends AppCompatActivity {
                         drawerLayout.closeDrawers();
 
                         if(menuItem.isChecked()) {
-                            mv.getOverlays().add(transitLines);
 
+                            final Handler h = new Handler();
+                            final int delay = 2000; //milliseconds
+
+                            h.postDelayed(new Runnable(){
+                                public void run(){
+                                    //do something
+                                    TransitOverlay transitOverlay = new TransitOverlay();
+                                    transitOverlay.getCampusBuses(getApplicationContext(), mv);
+                                    h.postDelayed(this, delay);
+                                }
+                            }, delay);
+
+
+
+
+
+
+
+
+
+
+                                TransitOverlay transitOverlay = new TransitOverlay();
+                                transitOverlay.getCampusBuses(getApplicationContext(), mv);
+
+                            mv.getOverlays().add(transitLines);
                             mv.invalidate();
 
                         }
                         else{
+                            mv.clear();
                             mv.getOverlays().remove(transitLines);
                             mv.invalidate();
 
@@ -299,29 +332,26 @@ public class MainActivity extends AppCompatActivity {
 
 
                 if(item.getTitle().equals("Floor 1")) {
-                    System.out.println("Floor 1");
-                    /*
-                    if (floorLevel.getCurrentFloorLevel() == 0) Toast.makeText(getApplicationContext(), "Already showing Floor 1", Toast.LENGTH_SHORT).show();
+                    if (currentFloor == 0) Toast.makeText(getApplicationContext(), "Already showing Floor 1", Toast.LENGTH_SHORT).show();
                     else{
-                        floorLevel.changeFloorLevel(getApplicationContext(), mv, 0);
-                        floorLevel.setCurrentFloorLevel(0);
-                    }*/
+                        changeFloorLevel(getApplicationContext(), mv, 0);
+                        currentFloor = 0;
+                    }
                 }
                 if(item.getTitle().equals("Floor 2")) {
-                    System.out.println("Floor 2");
-                    /*if (floorLevel.getCurrentFloorLevel() == 1) Toast.makeText(getApplicationContext(), "Already showing Floor 2", Toast.LENGTH_SHORT).show();
+                    if (currentFloor == 1) Toast.makeText(getApplicationContext(), "Already showing Floor 2", Toast.LENGTH_SHORT).show();
                     else{
-                        floorLevel.changeFloorLevel(getApplicationContext(), mv, 1);
-                        floorLevel.setCurrentFloorLevel(1);
-                    }*/
+                        changeFloorLevel(getApplicationContext(), mv, 1);
+                        currentFloor = 1;
+                    }
                 }
                 if(item.getTitle().equals("Floor 3")) {
                     System.out.println("Floor 3");
-                    /*if (floorLevel.getCurrentFloorLevel() == 2) Toast.makeText(getApplicationContext(), "Already showing Floor 3", Toast.LENGTH_SHORT).show();
+                    if (currentFloor == 2) Toast.makeText(getApplicationContext(), "Already showing Floor 3", Toast.LENGTH_SHORT).show();
                     else{
-                        floorLevel.changeFloorLevel(getApplicationContext(), mv, 2);
-                        floorLevel.setCurrentFloorLevel(2);
-                    }*/
+                        changeFloorLevel(getApplicationContext(), mv, 2);
+                        currentFloor = 2;
+                    }
                 }
 
 
@@ -482,7 +512,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onGlobalLayout() {
                 View contentView = decorView.findViewById(android.R.id.content);
-                PB.setY(contentView.getY() + toolbar.getHeight() + getStatusBarHeight() -15);
+                PB.setY(contentView.getY() + toolbar.getHeight() + getStatusBarHeight() - 15);
 
                 ViewTreeObserver observer = PB.getViewTreeObserver();
                 observer.removeGlobalOnLayoutListener(this);
@@ -500,7 +530,64 @@ public class MainActivity extends AppCompatActivity {
         return result;
     }
 
+    public int getCurrentFloor(){
+        return currentFloor;
+    }
 
+    public void setCurrentFloor(int currentFloor){
+        this.currentFloor = currentFloor;
+    }
+
+    public void changeFloorLevel(Context context, MapView mv, int level){
+
+        mv.setAccessToken("sk.eyJ1IjoiY2FtbWFjZSIsImEiOiI1MDYxZjA1MDc0YzhmOTRhZWFlODBlNGVlZDgzMTcxYSJ9.Ryw8G5toQp5yloce36hu2A");
+
+        if(level == 0){
+            MapboxTileLayer level0Overlay = new MapboxTileLayer("cammace.nc76p7k8");
+            MapTileLayerBase level0OverlayBase = new MapTileLayerBasic(context, level0Overlay, mv);
+            level_0 = new TilesOverlay(level0OverlayBase);
+            level_0.setDrawLoadingTile(false);
+            level_0.setLoadingBackgroundColor(Color.TRANSPARENT);
+
+            mv.getOverlays().remove(level_1);
+            mv.getOverlays().remove(level_2);
+            mv.getOverlays().add(level_0);
+            mv.invalidate();
+
+        }
+
+
+        if(level == 1){
+            MapboxTileLayer level1Overlay = new MapboxTileLayer("cammace.nc77c38k");
+            MapTileLayerBase level1OverlayBase = new MapTileLayerBasic(context, level1Overlay, mv);
+            level_1 = new TilesOverlay(level1OverlayBase);
+            level_1.setDrawLoadingTile(false);
+            level_1.setLoadingBackgroundColor(Color.TRANSPARENT);
+
+            //loadFloorLevels(context, mv);
+            mv.getOverlays().remove(level_0);
+            mv.getOverlays().remove(level_2);
+            mv.getOverlays().add(level_1);
+            mv.invalidate();
+
+        }
+
+
+        if(level == 2){
+
+            MapboxTileLayer level2Overlay = new MapboxTileLayer("cammace.nc77kk5a");
+            MapTileLayerBase level2OverlayBase = new MapTileLayerBasic(context, level2Overlay, mv);
+            level_2 = new TilesOverlay(level2OverlayBase);
+            level_2.setDrawLoadingTile(false);
+            level_2.setLoadingBackgroundColor(Color.TRANSPARENT);
+
+            mv.getOverlays().remove(level_0);
+            mv.getOverlays().remove(level_1);
+            mv.getOverlays().add(level_2);
+            mv.invalidate();
+
+        }
+    }
 
 
 
