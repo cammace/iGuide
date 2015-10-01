@@ -10,6 +10,8 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
+import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.SearchRecentSuggestions;
@@ -32,18 +34,32 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.api.ILatLng;
 import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.MapEventsOverlay;
 import com.mapbox.mapboxsdk.overlay.MapEventsReceiver;
+import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.overlay.TilesOverlay;
 import com.mapbox.mapboxsdk.tileprovider.MapTileLayerBase;
 import com.mapbox.mapboxsdk.tileprovider.MapTileLayerBasic;
 import com.mapbox.mapboxsdk.tileprovider.tilesource.MapboxTileLayer;
 import com.mapbox.mapboxsdk.views.MapView;
 
+import org.json.JSONObject;
+
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
+import team6.iguide.BusLocation.BusLocation;
 
 
 // http://stackoverflow.com/questions/20610253/how-to-enable-longclick-on-map-with-osmdroid-in-supportmapfragment
@@ -71,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
     TilesOverlay level_0;
     TilesOverlay level_1;
     TilesOverlay level_2;
+    public List<LatLng> busRouteMarkers = new ArrayList<>();
+    private RequestQueue mRequestQueue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,6 +152,23 @@ public class MainActivity extends AppCompatActivity {
         changeFloorLevel(getApplicationContext(), mv, 0);
         currentFloor = 0;
 
+        double startLat = 29.721554408195207;
+        double startLon = -95.3406000137329;
+        double finishLat = 29.723408552491627;
+        double finishLon = -95.34222005934475;
+
+        LatLng start = new LatLng(startLat,startLon);
+        LatLng finish = new LatLng(finishLat,finishLon);
+
+        SmoothMovingMarker smoothMovingMarker = new SmoothMovingMarker();
+        List<LatLng> busPlot = smoothMovingMarker.pointsBetween(start, finish, 10);
+
+        for(int i = 0; i<busPlot.size(); i++){
+            Marker marker = new Marker("blah", "blah", busPlot.get(i));
+            mv.addMarker(marker);
+        }
+
+
     }
 
     private void navigationDrawer(){
@@ -171,11 +206,11 @@ public class MainActivity extends AppCompatActivity {
                             final Handler h = new Handler();
                             final int delay = 2000; //milliseconds
 
-                            h.postDelayed(new Runnable(){
-                                public void run(){
+                            h.postDelayed(new Runnable() {
+                                public void run() {
                                     //do something
-                                    TransitOverlay transitOverlay = new TransitOverlay();
-                                    transitOverlay.getCampusBuses(getApplicationContext(), mv);
+                                    getCampusBuses();
+
                                     h.postDelayed(this, delay);
                                 }
                             }, delay);
@@ -188,9 +223,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-                                TransitOverlay transitOverlay = new TransitOverlay();
-                                transitOverlay.getCampusBuses(getApplicationContext(), mv);
 
                             mv.getOverlays().add(transitLines);
                             mv.invalidate();
@@ -589,7 +621,85 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void getCampusBuses(){
+
+        String URI = buildURI();
+
+        mRequestQueue = Volley.newRequestQueue(getApplicationContext());
+        fetchJsonResponse(URI);
+
+    }
+
+    private String buildURI(){
+
+        Uri.Builder builder = new Uri.Builder();
+        builder.scheme("http")
+                .authority("uhpublic.etaspot.net")
+                .appendPath("service.php")
+                        //.appendPath("1")
+                        //.appendPath("route")
+                .appendQueryParameter("service", "get_vehicles")
+                .appendQueryParameter("includeETAData", "1")
+                .appendQueryParameter("orderedETAArray", "1")
+                .appendQueryParameter("format", "json")
+                .appendQueryParameter("district", "1")
+                .appendQueryParameter("debug", "true");
+        return builder.build().toString();
+    }
+
+    private void fetchJsonResponse(String URI) {
+
+        JsonObjectRequest req = new JsonObjectRequest(URI, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+
+                Gson gson = new Gson();
+                String busData = response.toString();
+
+                BusLocation busInfo = gson.fromJson(busData, BusLocation.class);
+
+              //  LatLng position = new LatLng(busInfo.getGetVehicles().get(0).getLat(), busInfo.getGetVehicles().get(0).getLng());
+              //  busRouteMarkers.add(position);
+
+               // double newLat = Math.toRadians(busInfo.getGetVehicles().get(0).getLat());
+                //double newLng = Math.toRadians(busInfo.getGetVehicles().get(0).getLng());
 
 
+
+
+
+
+                /*
+                mv.clear();
+                for(int i=0; i<busInfo.getGetVehicles().size(); i++) {
+                    if(busInfo.getGetVehicles().get(i).getInService() == 1) {
+                        Marker marker = new Marker("blah", "blah", new LatLng(
+                                busInfo.getGetVehicles().get(i).getLat(), busInfo.getGetVehicles().get(i).getLng()));
+                        mv.addMarker(marker);
+
+                    }
+                }*/
+
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // TODO Auto-generated method stub
+                System.out.println(error);
+
+            }
+        });
+        mRequestQueue.add(req);
+
+        // This allows volley to retry request if for some reason it times out the first time
+        // More info can be found in this question:
+        // http://stackoverflow.com/questions/17094718/android-volley-timeout
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                5000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+    }
 
 }

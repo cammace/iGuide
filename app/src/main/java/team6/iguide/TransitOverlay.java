@@ -30,7 +30,7 @@ public class TransitOverlay{
     private RequestQueue mRequestQueue;
     Context mapContext;
     MapView mv;
-
+/*
     public void getCampusBuses(Context context, MapView mapView){
 
         mapContext = context;
@@ -101,5 +101,5 @@ public class TransitOverlay{
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
     }
-
+*/
 }
