@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="all">
+    <group android:checkableBehavior="none">
 
         <item
             android:id="@+id/poi"
@@ -10,16 +10,40 @@
             android:title="@string/poi" />
 
         <item
-            android:id="@+id/transit"
-            android:checked="false"
-            android:icon="@drawable/ic_directions_bus_black_24dp"
-            android:title="@string/transit" />
-
-        <item
             android:id="@+id/parking"
             android:checked="false"
             android:icon="@drawable/ic_local_parking_black_24dp"
             android:title="@string/parking" />
+
+    </group>
+
+    <group
+        android:id="@+id/group_transit"
+        >
+
+        <item
+            android:id="@+id/campus_loop"
+            android:checked="false"
+            android:icon="@drawable/ic_directions_bus_black_24dp"
+            android:title="@string/campus_loop" />
+
+        <item
+            android:id="@+id/outer_loop"
+            android:checked="false"
+            android:icon="@drawable/ic_directions_bus_black_24dp"
+            android:title="@string/outer_loop" />
+
+        <item
+            android:id="@+id/eastwood_erp_line"
+            android:checked="false"
+            android:icon="@drawable/ic_directions_bus_black_24dp"
+            android:title="@string/eastwood_erp_line" />
+
+        <item
+            android:id="@+id/erp_express"
+            android:checked="false"
+            android:icon="@drawable/ic_directions_bus_black_24dp"
+            android:title="@string/erp_express" />
 
     </group>
 

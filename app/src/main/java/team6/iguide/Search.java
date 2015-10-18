@@ -33,7 +33,6 @@ public class Search {
     OverpassModel results;
     Context mapContext;
     String boundingBox = "(29.709354854765827,-95.35668790340424,29.731896194504913,-95.31928449869156);";
-    FloorLevel floorLevel = new FloorLevel();
     ArrayList<LatLng> resultBBList = new ArrayList<>();
     View progressBar;
     MainActivity mainActivity = new MainActivity();
@@ -140,14 +139,11 @@ public class Search {
                 // Check if the search returned a room
                 else if (q.get(0).getTags().getIndoor() != null) {
 
-                    System.out.println("before" + mainActivity.getCurrentFloor());
-                    System.out.println("search level" + Integer.parseInt(q.get(0).getTags().getLevel()));
-                    if(mainActivity.getCurrentFloor() != Integer.parseInt(q.get(0).getTags().getLevel())){
+                    //if(mainActivity.getCurrentFloor() != Integer.parseInt(q.get(0).getTags().getLevel())){
 
                         mainActivity.changeFloorLevel(mapContext, mv, Integer.parseInt(q.get(0).getTags().getLevel()));
-                        mainActivity.setCurrentFloor(Integer.parseInt(q.get(0).getTags().getLevel()));
-                        System.out.println("after" + mainActivity.getCurrentFloor());
-                    }
+                       // mainActivity.setCurrentFloor(Integer.parseInt(q.get(0).getTags().getLevel()));
+                    //}
 
                     Marker marker = new Marker(q.get(0).getTags().getName(), q.get(0).getTags().getRef(), new LatLng(
                             q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));

@@ -59,7 +59,7 @@ public class CustomInfoWindow extends InfoWindow {
                     return;
                 }
 
-                //TODO check to make sure user is location is within bounding box, otherwise return;
+                //TODO check to make sure users location is within bounding box, otherwise return;
 
                 MainActivity mainActivity = new MainActivity();
                 mainActivity.displayRouting(mView.getContext(), mv, desLat, desLon);

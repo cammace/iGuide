@@ -1,6 +1,18 @@
 <resources>
     <string name="app_name">iGuide</string>
+    <string name="mapbox_access_token">sk.eyJ1IjoiY2FtbWFjZSIsImEiOiI1MDYxZjA1MDc0YzhmOTRhZWFlODBlNGVlZDgzMTcxYSJ9.Ryw8G5toQp5yloce36hu2A</string>
+    <string name="map_bounding_box">(29.709354854765827,-95.35668790340424,29.731896194504913,-95.31928449869156);</string>
 
+    <!-- Mapbox map keys-->
+    <string name="floor_0_key">cammace.nc76p7k8</string>
+    <string name="floor_1_key">cammace.nc77c38k</string>
+    <string name="floor_2_key">cammace.nc77kk5a</string>
+
+    <string name="busTrackingURL">http://uhpublic.etaspot.net/service.php?service=get_vehicles&amp;includeETAData=1&amp;orderedETAArray=1&amp;token=TESTING</string>
+
+    <string name="noBusOnRoute">No buses currently running route</string>
+
+    <string name="title_activity_about">About app</string>
     <string name="title_activity_detailed_info">Detailed Info</string>
     <string name="title_activity_routing">Routing</string>
     
@@ -15,6 +27,12 @@
     <string name="settings">Settings</string>
     <string name="help">Help &amp; Feedback</string>
     <string name="transit">Transit</string>
+
+    <string name="campus_loop">Campus Loop</string>
+    <string name="outer_loop">Outer Loop</string>
+    <string name="eastwood_erp_line">Eastwood ERP Line</string>
+    <string name="erp_express">ERP Express</string>
+
 
 
     <!-- Help Dialog Fragment -->
@@ -37,5 +55,16 @@
     <string name="floor_0">Floor 1</string>
     <string name="floor_1">Floor 2</string>
     <string name="floor_2">Floor 3</string>
+
+    <!-- SettingActivity -->
+    <string name="clear_history">"Clear search history"</string>
+
+    <string name="clear_history_alert_title">Clear search history?</string>
+    <string name="clear_history_alert_message">This will permanently delete all search history.</string>
+    <string name="clear_history_alert_positive">"Clear"</string>
+    <string name="clear_history_alert_negative">Cancel</string>
+    <string name="clear_history_alert__positive_toast_msg">Search history cleared</string>
+
+    <string name="feedbackEmailAddress">iguide6@gmail.com</string>
 
 </resources>

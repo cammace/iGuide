@@ -1,31 +1,49 @@
 package team6.iguide;
 
+/***
+ iGuide
+ Copyright (C) 2015 Cameron Mace
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import android.app.ActionBar;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.RoundRectShape;
-import android.location.Location;
-import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.SearchRecentSuggestions;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -42,11 +60,19 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.api.ILatLng;
+import com.mapbox.mapboxsdk.events.DelayedMapListener;
+import com.mapbox.mapboxsdk.events.MapListener;
+import com.mapbox.mapboxsdk.events.RotateEvent;
+import com.mapbox.mapboxsdk.events.ScrollEvent;
+import com.mapbox.mapboxsdk.events.ZoomEvent;
 import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.overlay.Icon;
+import com.mapbox.mapboxsdk.overlay.ItemizedIconOverlay;
 import com.mapbox.mapboxsdk.overlay.MapEventsOverlay;
 import com.mapbox.mapboxsdk.overlay.MapEventsReceiver;
 import com.mapbox.mapboxsdk.overlay.Marker;
+import com.mapbox.mapboxsdk.overlay.Overlay;
 import com.mapbox.mapboxsdk.overlay.TilesOverlay;
 import com.mapbox.mapboxsdk.tileprovider.MapTileLayerBase;
 import com.mapbox.mapboxsdk.tileprovider.MapTileLayerBasic;
@@ -61,17 +87,6 @@ import java.util.List;
 
 import team6.iguide.BusLocation.BusLocation;
 
-
-// http://stackoverflow.com/questions/20610253/how-to-enable-longclick-on-map-with-osmdroid-in-supportmapfragment
-
-// This helped solve search issues:
-// http://blog.dpdearing.com/2011/05/getting-android-to-call-onactivityresult-after-onsearchrequested/
-
-// This link will show you an exmaple of the JSON get request and response using the Overpass API
-// http://overpass-turbo.eu/s/bdv
-
-
-
 public class MainActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
@@ -80,15 +95,29 @@ public class MainActivity extends AppCompatActivity {
     private MenuItem searchItem;
     private SearchView searchView;
     private MapView mv;
-    private TilesOverlay transitLines;
     public  View progressBar;
-    FloorLevel floorLevel = new FloorLevel();
     int currentFloor;
-    TilesOverlay level_0;
-    TilesOverlay level_1;
-    TilesOverlay level_2;
-    public List<LatLng> busRouteMarkers = new ArrayList<>();
     private RequestQueue mRequestQueue;
+    List<LatLng> start = new ArrayList<>();
+    List<LatLng> finish = new ArrayList<>();
+    final TwoPointMath twoPointMath = new TwoPointMath();
+    List<LatLng> busPlot = new ArrayList<>();
+    List<List> buses = new ArrayList<>();
+    boolean firstBusCheck = true;
+    final Handler transitHandler = new Handler();
+    int updateBusTimer = 0;
+    MenuItem previousDrawerMenuItem;
+    List<List> poiMarkers = new ArrayList<>();
+    boolean poiShow = true;
+
+    // Tiles
+    private TilesOverlay campusLoopTiles;
+    private TilesOverlay outerLoopTiles;
+    private TilesOverlay eastwoodErpLineTiles;
+    private TilesOverlay erpExpressTiles;
+    TilesOverlay floorLevel;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,9 +132,6 @@ public class MainActivity extends AppCompatActivity {
 
         progressBar = createProgressBar();
         progressBar.setVisibility(View.INVISIBLE);
-
-
-
 
         // Associate searchable configuration with the SearchView
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
@@ -150,31 +176,19 @@ public class MainActivity extends AppCompatActivity {
         if(mv == null) setMap();
 
         changeFloorLevel(getApplicationContext(), mv, 0);
-        currentFloor = 0;
-
-        double startLat = 29.721554408195207;
-        double startLon = -95.3406000137329;
-        double finishLat = 29.723408552491627;
-        double finishLon = -95.34222005934475;
-
-        LatLng start = new LatLng(startLat,startLon);
-        LatLng finish = new LatLng(finishLat,finishLon);
-
-        SmoothMovingMarker smoothMovingMarker = new SmoothMovingMarker();
-        List<LatLng> busPlot = smoothMovingMarker.pointsBetween(start, finish, 10);
-
-        for(int i = 0; i<busPlot.size(); i++){
-            Marker marker = new Marker("blah", "blah", busPlot.get(i));
-            mv.addMarker(marker);
-        }
-
-
     }
 
     private void navigationDrawer(){
+
+        //String[] transitItems = {"transit 1", "transit 2", "transit 3"};
+
         //Initializing NavigationView
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
+        /*ExpandableListView drawerList = (ExpandableListView) findViewById(R.id.left_drawer2);
 
+
+        //drawerList.setAdapter(new SimpleExpandableListAdapter(this, groupData, android.R.layout.simple_list_item_1, new String[] {"blahblah"},));
+*/
         //Setting Navigation View Item Selected Listener to handle the item click of the navigation menu
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
 
@@ -182,94 +196,69 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
 
-
                 //Checking if the item is in checked state or not, if not make it in checked state
                 if (menuItem.isChecked()) menuItem.setChecked(false);
                 else menuItem.setChecked(true);
 
                 //Closing drawer on item click
-                //drawerLayout.closeDrawers();
+                drawerLayout.closeDrawers();
                 Intent intent;
                 //Check to see which item was being clicked and perform appropriate action
                 switch (menuItem.getItemId()) {
-
-                    //Replacing the main content with ContentFragment Which is our Inbox View;
                     case R.id.parking:
-                        drawerLayout.closeDrawers();
-                        Toast.makeText(getApplicationContext(), "Parking", Toast.LENGTH_SHORT).show();
-                        return true;
-                    case R.id.transit:
-                        drawerLayout.closeDrawers();
-
-                        if(menuItem.isChecked()) {
-
-                            final Handler h = new Handler();
-                            final int delay = 2000; //milliseconds
-
-                            h.postDelayed(new Runnable() {
-                                public void run() {
-                                    //do something
-                                    getCampusBuses();
-
-                                    h.postDelayed(this, delay);
-                                }
-                            }, delay);
-
-
-
-
-
-
-
-
-
-
-                            mv.getOverlays().add(transitLines);
-                            mv.invalidate();
-
-                        }
-                        else{
-                            mv.clear();
-                            mv.getOverlays().remove(transitLines);
-                            mv.invalidate();
-
-                        }
-
-
-
-                        return true;
+                        Toast.makeText(getApplicationContext(), "Parking feature coming soon", Toast.LENGTH_SHORT).show();
+                        break;
+                    case R.id.campus_loop:
+                        // If bus route isn't showing on mapView then display it, else remove it.
+                        if (menuItem.isChecked()) playBusRoute(1);
+                        else stopBusRoute(1);
+                        break;
+                    case R.id.outer_loop:
+                        if (menuItem.isChecked()) playBusRoute(3);
+                        else stopBusRoute(3);
+                        break;
+                    case R.id.eastwood_erp_line:
+                        if (menuItem.isChecked()) playBusRoute(2);
+                        else stopBusRoute(2);
+                        break;
+                    case R.id.erp_express:
+                        if (menuItem.isChecked()) playBusRoute(4);
+                        else stopBusRoute(4);
+                        break;
                     case R.id.poi:
-                        drawerLayout.closeDrawers();
-                        if(menuItem.isChecked()) {
-                            PointOfInterest pointOfInterest = new PointOfInterest();
-                            pointOfInterest.getPOI(MainActivity.this, mv);
-                        }else{
+                        if (menuItem.isChecked() && !poiShow) {
+                            poiShow = true;
+                            if (mv.getZoomLevel() >= 18) {
+                                mv.addMarkers(poiMarkers.get(1));
+                            }
+                            if (mv.getZoomLevel() >= 16) {
+                                mv.addMarkers(poiMarkers.get(0));
+                            }
+                        } else {
+                            poiShow = false;
                             mv.clear();
                             mv.clearMarkerFocus();
                         }
-
-                        return true;
+                        break;
                     case R.id.settings:
                         intent = new Intent(MainActivity.this, Settings.class);
                         startActivity(intent);
-
-                        //overridePendingTransition(R.anim.pull_in, R.anim.hold);
-
-                        return true;
+                        break;
                     case R.id.help:
-                        drawerLayout.closeDrawers();
-
                         DialogFragment newFragmentHelp = new Help();
                         newFragmentHelp.show(getSupportFragmentManager(), "Help & Feedback");
-                        return true;
+                        break;
                     default:
                         Toast.makeText(getApplicationContext(), "Somethings Wrong", Toast.LENGTH_SHORT).show();
-                        return true;
-
+                        break;
                 }
+
+                // Setting drawerMenuItem allows us to see what items currently selected in the
+                // navigation drawer globally
+                previousDrawerMenuItem = menuItem;
+                return true;
             }
         });
-
         // Initializing Drawer Layout and ActionBarToggle
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.openDrawer, R.string.closeDrawer) {
@@ -291,9 +280,14 @@ public class MainActivity extends AppCompatActivity {
         //Setting the actionbarToggle to drawer layout
         drawerLayout.setDrawerListener(actionBarDrawerToggle);
 
-        //calling sync state is necessay or else your hamburger icon wont show up
+        //calling sync state is necessary or else your hamburger icon wont show up
         actionBarDrawerToggle.syncState();
     }
+
+
+
+
+
 
     // This method sets up the floating action button (FAB) and handles the on click.
     private void userLocationFAB(){
@@ -308,6 +302,35 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    public void stopBusRoute(int busRoute){
+        // Stop handler from moving and updating bus marker
+        transitHandler.removeCallbacksAndMessages(null);
+        // Clear all bus markers
+        // TODO fix so that it only clears bus markers instead of all
+        mv.clear();
+
+        // Since we are removing whatever current route is showing, we also want to uncheck the item
+        // in the navigation drawer
+        previousDrawerMenuItem.setChecked(false);
+
+        // Finally, remove bus route tile overlay from mapView
+        switch(busRoute){
+            case 1:
+                mv.getOverlays().remove(campusLoopTiles);
+                break;
+            case 2:
+                mv.getOverlays().remove(eastwoodErpLineTiles);
+                break;
+            case 3:
+                mv.getOverlays().remove(outerLoopTiles);
+                break;
+            case 4:
+                mv.getOverlays().remove(erpExpressTiles);
+                break;
+        }
+        mv.invalidate();
     }
 
     @Override
@@ -367,14 +390,12 @@ public class MainActivity extends AppCompatActivity {
                     if (currentFloor == 0) Toast.makeText(getApplicationContext(), "Already showing Floor 1", Toast.LENGTH_SHORT).show();
                     else{
                         changeFloorLevel(getApplicationContext(), mv, 0);
-                        currentFloor = 0;
                     }
                 }
                 if(item.getTitle().equals("Floor 2")) {
                     if (currentFloor == 1) Toast.makeText(getApplicationContext(), "Already showing Floor 2", Toast.LENGTH_SHORT).show();
                     else{
                         changeFloorLevel(getApplicationContext(), mv, 1);
-                        currentFloor = 1;
                     }
                 }
                 if(item.getTitle().equals("Floor 3")) {
@@ -382,7 +403,6 @@ public class MainActivity extends AppCompatActivity {
                     if (currentFloor == 2) Toast.makeText(getApplicationContext(), "Already showing Floor 3", Toast.LENGTH_SHORT).show();
                     else{
                         changeFloorLevel(getApplicationContext(), mv, 2);
-                        currentFloor = 2;
                     }
                 }
 
@@ -405,8 +425,41 @@ public class MainActivity extends AppCompatActivity {
         mv.setZoom(17);
 
        // mv.getUserLocationOverlay().setDirectionArrowBitmap();
+        PointOfInterest pointOfInterest = new PointOfInterest();
+        poiMarkers = pointOfInterest.getPOI(MainActivity.this, mv);
 
+        if (mv.getZoomLevel() >= 18 && poiShow) {
+            mv.addMarkers(poiMarkers.get(1));
+        }
+        if (mv.getZoomLevel() >= 16 && poiShow) {
+            mv.addMarkers(poiMarkers.get(0));
+        }
 
+        mv.addListener(new DelayedMapListener(new MapListener() {
+            @Override
+            public void onScroll(ScrollEvent event) {
+
+            }
+
+            @Override
+            public void onZoom(ZoomEvent event) {
+                //System.out.println(mv.getZoomLevel());
+                mv.closeCurrentTooltip();
+                mv.clear();
+
+                if (mv.getZoomLevel() >= 18 && poiShow) {
+                    mv.addMarkers(poiMarkers.get(1));
+                }
+                if (mv.getZoomLevel() >= 16 && poiShow) {
+                    mv.addMarkers(poiMarkers.get(0));
+                }
+            }
+
+            @Override
+            public void onRotate(RotateEvent event) {
+
+            }
+        }));
 
         //myLocationOverlay = new UserLocationOverlay(new GpsLocationProvider(this), mv);
         //myLocationOverlay.enableMyLocation();
@@ -418,16 +471,29 @@ public class MainActivity extends AppCompatActivity {
         mv.setScrollableAreaLimit(scrollLimit);
         mv.setMinZoomLevel(16);
 
-        MapboxTileLayer transitLineOverlay = new MapboxTileLayer("cammace.n2jn0loh");
-        MapTileLayerBase test = new MapTileLayerBasic(getApplicationContext(), transitLineOverlay, mv);
-        transitLines = new TilesOverlay(test);
-        transitLines.setDrawLoadingTile(false);
-        transitLines.setLoadingBackgroundColor(Color.TRANSPARENT);
+        MapboxTileLayer campusLoopOverlay = new MapboxTileLayer("cammace.n2jn0loh");
+        MapTileLayerBase test = new MapTileLayerBasic(getApplicationContext(), campusLoopOverlay, mv);
+        campusLoopTiles = new TilesOverlay(test);
+        campusLoopTiles.setDrawLoadingTile(false);
+        campusLoopTiles.setLoadingBackgroundColor(Color.TRANSPARENT);
 
+        MapboxTileLayer outerloopOverlay = new MapboxTileLayer("cammace.nmo5dh63");
+        MapTileLayerBase test1 = new MapTileLayerBasic(getApplicationContext(), outerloopOverlay, mv);
+        outerLoopTiles = new TilesOverlay(test1);
+        outerLoopTiles.setDrawLoadingTile(false);
+        outerLoopTiles.setLoadingBackgroundColor(Color.TRANSPARENT);
 
+        MapboxTileLayer erpExpressOverlay = new MapboxTileLayer("cammace.nn02920e");
+        MapTileLayerBase test2 = new MapTileLayerBasic(getApplicationContext(), erpExpressOverlay, mv);
+        erpExpressTiles = new TilesOverlay(test2);
+        erpExpressTiles.setDrawLoadingTile(false);
+        erpExpressTiles.setLoadingBackgroundColor(Color.TRANSPARENT);
 
-
-
+        MapboxTileLayer eastwoodErpLineOverlay = new MapboxTileLayer("cammace.nn02f097");
+        MapTileLayerBase test3 = new MapTileLayerBasic(getApplicationContext(), eastwoodErpLineOverlay, mv);
+        eastwoodErpLineTiles = new TilesOverlay(test3);
+        eastwoodErpLineTiles.setDrawLoadingTile(false);
+        eastwoodErpLineTiles.setLoadingBackgroundColor(Color.TRANSPARENT);
 
         //PathEffect pathEffect = new PathDashPathEffect(makePathDash(), 12, 10, PathDashPathEffect.Style.MORPH);
 
@@ -453,7 +519,19 @@ public class MainActivity extends AppCompatActivity {
         //mv.setMapRotationEnabled(true);
 
 
-        MapEventsReceiver mReceive = new MapEventsReceiver() {
+
+/*
+mv.setOnTouchListener(new View.OnTouchListener(){
+
+    @Override
+public boolean onTouch(View v, MotionEvent e){
+        System.out.println(mv.getZoomLevel());
+        return true;
+    }
+});
+*/
+
+                MapEventsReceiver mReceive = new MapEventsReceiver() {
             @Override
             public boolean singleTapUpHelper(ILatLng pressLatLon) {
                 // Convert pressed latitude and longitude to string for URI
@@ -476,8 +554,8 @@ public class MainActivity extends AppCompatActivity {
         mv.getOverlays().add(gestureOverlay);
 
 
-
     }
+
 
     private void handleIntent(Intent intent){
         // Get the intent, verify the action and get the query
@@ -490,7 +568,7 @@ public class MainActivity extends AppCompatActivity {
 
             Search search = new Search();
             // Get the search query
-            //progressBar.setVisibility(View.VISIBLE);
+
             search.executeSearch(this, mv, query, progressBar);
 
 
@@ -572,123 +650,249 @@ public class MainActivity extends AppCompatActivity {
 
     public void changeFloorLevel(Context context, MapView mv, int level){
 
-        mv.setAccessToken("sk.eyJ1IjoiY2FtbWFjZSIsImEiOiI1MDYxZjA1MDc0YzhmOTRhZWFlODBlNGVlZDgzMTcxYSJ9.Ryw8G5toQp5yloce36hu2A");
+        if(level == currentFloor) return;
+        String mapKey;
+        Overlay temp = floorLevel;
 
-        if(level == 0){
-            MapboxTileLayer level0Overlay = new MapboxTileLayer("cammace.nc76p7k8");
-            MapTileLayerBase level0OverlayBase = new MapTileLayerBasic(context, level0Overlay, mv);
-            level_0 = new TilesOverlay(level0OverlayBase);
-            level_0.setDrawLoadingTile(false);
-            level_0.setLoadingBackgroundColor(Color.TRANSPARENT);
+        //System.out.println(mv.getOverlays());
+        //if(mv.getOverlays().contains(floorLevel))
+        //System.out.println(mv.getOverlays().get(mv.getOverlays().indexOf(floorLevel)));
 
-            mv.getOverlays().remove(level_1);
-            mv.getOverlays().remove(level_2);
-            mv.getOverlays().add(level_0);
+        if(mv.getOverlays().contains(floorLevel)){
+            temp = mv.getOverlays().get(mv.getOverlays().indexOf(floorLevel));
+            mv.getOverlays().remove(floorLevel);
+        }
+
+       // if(mv.getOverlays().contains(level_1)) mv.getOverlays().remove(level_1);
+       // if(mv.getOverlays().contains(level_2)) mv.getOverlays().remove(level_2);
+
+        //if(mv.getOverlays().get(mv.getOverlays().indexOf(floorLevel)) == )
+
+        //if(level == 0) mapKey = getString(R.string.floor_0_key);
+        switch(level){
+            default:
+                mapKey = "cammace.nc76p7k8"; //getString(R.string.floor_0_key);
+                break;
+            case 1:
+                mapKey = "cammace.nc77c38k"; //getString(R.string.floor_1_key);
+                break;
+            case 2:
+                mapKey = "cammace.nc77kk5a"; //getString(R.string.floor_2_key);
+                break;
+        }
+
+            MapboxTileLayer mapboxTileLayer = new MapboxTileLayer(mapKey);
+            MapTileLayerBase mapTileLayerBase = new MapTileLayerBasic(context, mapboxTileLayer, mv);
+            floorLevel = new TilesOverlay(mapTileLayerBase);
+            floorLevel.setDrawLoadingTile(false);
+            floorLevel.setLoadingBackgroundColor(Color.TRANSPARENT);
+
+        System.out.println("temp=    " + temp);
+        System.out.println("floorlevel=    " + floorLevel);
+
+        if(temp == floorLevel) System.out.println("400000000");
+            mv.getOverlays().add(0, floorLevel);
             mv.invalidate();
+
+            currentFloor = level;
 
         }
 
 
-        if(level == 1){
-            MapboxTileLayer level1Overlay = new MapboxTileLayer("cammace.nc77c38k");
-            MapTileLayerBase level1OverlayBase = new MapTileLayerBasic(context, level1Overlay, mv);
-            level_1 = new TilesOverlay(level1OverlayBase);
-            level_1.setDrawLoadingTile(false);
-            level_1.setLoadingBackgroundColor(Color.TRANSPARENT);
-
-            //loadFloorLevels(context, mv);
-            mv.getOverlays().remove(level_0);
-            mv.getOverlays().remove(level_2);
-            mv.getOverlays().add(level_1);
-            mv.invalidate();
-
-        }
 
 
-        if(level == 2){
 
-            MapboxTileLayer level2Overlay = new MapboxTileLayer("cammace.nc77kk5a");
-            MapTileLayerBase level2OverlayBase = new MapTileLayerBasic(context, level2Overlay, mv);
-            level_2 = new TilesOverlay(level2OverlayBase);
-            level_2.setDrawLoadingTile(false);
-            level_2.setLoadingBackgroundColor(Color.TRANSPARENT);
 
-            mv.getOverlays().remove(level_0);
-            mv.getOverlays().remove(level_1);
-            mv.getOverlays().add(level_2);
-            mv.invalidate();
 
-        }
-    }
+    public void playBusRoute(final int busRoute){
+        // This method creates a handler that moves the bus markers every given second. This makes
+        // the markers move smoother on the map instead of jumping around. After x amount of time,
+        // the actual GPS location of the buses are updated.
 
-    public void getCampusBuses(){
+        // First we check to ensure no other transit overlay is present. If there is one we remove it
+        if(mv.getOverlays().contains(campusLoopTiles)) stopBusRoute(1);
+        if(mv.getOverlays().contains(outerLoopTiles)) stopBusRoute(3);
+        if(mv.getOverlays().contains(eastwoodErpLineTiles))stopBusRoute(2);
+        if(mv.getOverlays().contains(erpExpressTiles))stopBusRoute(4);
 
-        String URI = buildURI();
+        // Set firstBusCheck to true so we know its the first time running updateCurrentBusLocation
+        firstBusCheck = true;
 
+        // Clear all list so no leftover data interferes with the new bus routes
+        start.clear();
+        finish.clear();
+        busPlot.clear();
+
+        // Create volley queue
         mRequestQueue = Volley.newRequestQueue(getApplicationContext());
-        fetchJsonResponse(URI);
 
+        // Go ahead and check at beginning to see where buses currently are at.
+        updateCurrentBusLocation(getResources().getString(R.string.busTrackingURL), busRoute);
+
+        // Setup the handler that is executed every second.
+        transitHandler.postDelayed(new Runnable() {
+            public void run() {
+                // Check if timer has gone off and if it has, go ahead and update bus current GPS
+                // location and reset timer.
+                if (updateBusTimer >= 20) {
+                    updateBusTimer = 0;
+                    updateCurrentBusLocation(getResources().getString(R.string.busTrackingURL), busRoute);
+                }
+
+                // This if statement checks if list is empty, this ensures that we don't try moving
+                // marker to a null location and crashing the app.
+                if (busPlot.isEmpty()) Log.wtf("busRoute", "busMarkerList is empty");
+                else {
+                    // Clear all the markers on the map
+                    // TODO fix this so it only removes the bus markers instead of all markers.
+                    mv.clear();
+
+                    // Draw the bus markers
+                    for (int i = 0; i < buses.size(); i++) {
+                        List<LatLng> tempBus = buses.get(i);
+                        Marker busMarker = new Marker(null, null, tempBus.get(0));
+
+
+
+                        switch(busRoute){
+                            case 1:
+                                busMarker.setMarker(ContextCompat.getDrawable(getApplicationContext(), R.drawable.green_bus_marker));
+                                break;
+                            case 2:
+                                busMarker.setMarker(ContextCompat.getDrawable(getApplicationContext(), R.drawable.brown_bus_marker));
+                                break;
+                            case 3:
+                                busMarker.setMarker(ContextCompat.getDrawable(getApplicationContext(), R.drawable.purple_bus_marker));
+                                break;
+                            case 4:
+                                busMarker.setMarker(ContextCompat.getDrawable(getApplicationContext(), R.drawable.orange_bus_marker));
+                                break;
+                        }
+                        mv.addMarker(busMarker);
+                        tempBus.remove(0);
+                    }
+                }
+
+                // add one second to updateBusTimer
+                updateBusTimer++;
+
+                transitHandler.postDelayed(this, 500);
+            }
+        }, 500);
+
+        // Padding value around zoom boundingbox
+        double padding;
+
+        // Finally, overlay the bus route tile on top of the map and change the map camera view to fit route
+        switch(busRoute){
+            case 1:
+                mv.getOverlays().add(0, campusLoopTiles);
+                padding = 0.0;
+                mv.zoomToBoundingBox(new BoundingBox(
+                        29.725980077848597 + padding, // North
+                        -95.33725261688232 + padding, // East
+                        29.71621539329541 - padding,// South
+                        -95.34826040267944 - padding // West
+                        ), true, true);
+                break;
+            case 2:
+                mv.getOverlays().add(0, eastwoodErpLineTiles);
+                padding = 0.005;
+                mv.zoomToBoundingBox(new BoundingBox(
+                        29.72886830436441 + padding, // North
+                        -95.32023668289185 + padding, // East
+                        29.716345843815365 - padding,// South
+                        -95.34223079681395 - padding // West
+                ), true, true);
+                break;
+            case 3:
+                mv.getOverlays().add(0, outerLoopTiles);
+                padding = 0.0;
+                mv.zoomToBoundingBox(new BoundingBox(
+                        29.722905422785455 + padding, // North
+                        -95.34014940261841 + padding, // East
+                        29.710438128858048 - padding,// South
+                        -95.35074949264526 - padding // West
+                ), true, true);
+                break;
+            case 4:
+                mv.getOverlays().add(0, erpExpressTiles);
+                padding = 0.005;
+                mv.zoomToBoundingBox(new BoundingBox(
+                        29.72886830436441 + padding, // North
+                        -95.32023668289185 + padding, // East
+                        29.716345843815365 - padding,// South
+                        -95.34223079681395 - padding // West
+                ), true, true);
+                break;
+        }
+        // Refresh map so it shows the overlay
+        mv.invalidate();
     }
 
-    private String buildURI(){
+    private void updateCurrentBusLocation(String URI, final int busRoute) {
+        // This method is used to fetch json, parse it, and then update/create the list that tells
+        // where to move the bus markers next.
 
-        Uri.Builder builder = new Uri.Builder();
-        builder.scheme("http")
-                .authority("uhpublic.etaspot.net")
-                .appendPath("service.php")
-                        //.appendPath("1")
-                        //.appendPath("route")
-                .appendQueryParameter("service", "get_vehicles")
-                .appendQueryParameter("includeETAData", "1")
-                .appendQueryParameter("orderedETAArray", "1")
-                .appendQueryParameter("format", "json")
-                .appendQueryParameter("district", "1")
-                .appendQueryParameter("debug", "true");
-        return builder.build().toString();
-    }
-
-    private void fetchJsonResponse(String URI) {
-
+        // we begin by fetching the json data using volley
         JsonObjectRequest req = new JsonObjectRequest(URI, new Response.Listener<JSONObject>() {
-
             @Override
             public void onResponse(JSONObject response) {
 
+                // Parse the JSON response
                 Gson gson = new Gson();
                 String busData = response.toString();
-
                 BusLocation busInfo = gson.fromJson(busData, BusLocation.class);
 
-              //  LatLng position = new LatLng(busInfo.getGetVehicles().get(0).getLat(), busInfo.getGetVehicles().get(0).getLng());
-              //  busRouteMarkers.add(position);
+                // Create buses in service counter. This narrows the json results to just the buses
+                // that are currently in service
+                int busesInService = 0;
 
-               // double newLat = Math.toRadians(busInfo.getGetVehicles().get(0).getLat());
-                //double newLng = Math.toRadians(busInfo.getGetVehicles().get(0).getLng());
+                // Clear the buses list so its ready to be repopulated with each bus and its location.
+                buses.clear();
 
+                // Go through the json list (busInfo) and check if it's in service and in the route we need
+                for (int i = 0; i < busInfo.getGetVehicles().size(); i++)
+                    if (busInfo.getGetVehicles().get(i).getInService() == 1
+                            && busInfo.getGetVehicles().get(i).getRouteID() == busRoute) {
 
+                        busesInService++;
 
-
-
-
-                /*
-                mv.clear();
-                for(int i=0; i<busInfo.getGetVehicles().size(); i++) {
-                    if(busInfo.getGetVehicles().get(i).getInService() == 1) {
-                        Marker marker = new Marker("blah", "blah", new LatLng(
-                                busInfo.getGetVehicles().get(i).getLat(), busInfo.getGetVehicles().get(i).getLng()));
-                        mv.addMarker(marker);
-
+                        // If it's the first time running this method for the route selected, the
+                        // start list will be null, therefore, we need to set it to the same as finish
+                        // so that later on we wont get a null error.
+                        if(firstBusCheck) start.add(new LatLng(busInfo.getGetVehicles().get(i).getLat(), busInfo.getGetVehicles().get(i).getLng()));
+                        finish.add(new LatLng(busInfo.getGetVehicles().get(i).getLat(), busInfo.getGetVehicles().get(i).getLng()));
                     }
-                }*/
 
+                // Once we have the amount of buses on route and their locations, we can then operate on them.
+                // If the route currently contains no buses, we display a message telling the user
+                if(busesInService == 0 && firstBusCheck) Toast.makeText(getApplicationContext(),
+                        getResources().getString(R.string.noBusOnRoute), Toast.LENGTH_SHORT).show();
+
+                // This is where we populate the busPlot list with the results given by the pointsBetween
+                // method. This essentially smooths the marker movement so it doesn't jump so much.
+                for(int i = 0; i<busesInService; i++) {
+                    busPlot = twoPointMath.pointsBetween(start.get(i), finish.get(i), 20);
+                    buses.add(busPlot);
+                }
+
+                // Clear the start list and repopulate it with what used to be in the finish. This
+                // prepares it for next time we run this method it will have the correct positions.
+                start.clear();
+                for(int i = 0; i<busesInService; i++) {
+                    start.add(finish.get(i));
+                }
+
+                // Lastly, set the firstBusCheck to false and clear the finish list for next time.
+                firstBusCheck = false;
+                finish.clear();
             }
         }, new Response.ErrorListener() {
-
+            // This is in case an error occurs when fetching the json.
             @Override
             public void onErrorResponse(VolleyError error) {
-                // TODO Auto-generated method stub
-                System.out.println(error);
-
+                Log.e("busRoute", "Error occurred when trying to update bus GPS locations" + error);
             }
         });
         mRequestQueue.add(req);

@@ -1,17 +1,16 @@
 package team6.iguide;
 
-import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.Marker;
+import com.mapbox.mapboxsdk.views.InfoWindow;
+import com.mapbox.mapboxsdk.views.MapView;
 
-public class NoInfoMarker extends Marker{
-    public String mtitle;
-    public String getMtitle() {
-        return mtitle;
+public class NoInfoMarker extends InfoWindow{
+
+    public NoInfoMarker(MapView mv){
+        super(R.layout.infowindow_custom, mv);
+        //System.out.println("noinfo");
+        close();
     }
-    public void setMtitle(String mtitle) {
-        this.mtitle = mtitle;
-    }
-    public NoInfoMarker(String title, String description, LatLng latLng) {
-        super(title, description, latLng);
-    }
+
+
 }

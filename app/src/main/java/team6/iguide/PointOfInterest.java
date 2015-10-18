@@ -1,7 +1,29 @@
 package team6.iguide;
 
+/**
+ * iGuide
+ * Copyright (C) 2015 Cameron Mace
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import android.content.Context;
-import android.widget.Toast;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.RequestQueue;
@@ -16,6 +38,7 @@ import com.mapbox.mapboxsdk.views.MapView;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import team6.iguide.OverpassModel.OverpassElement;
@@ -27,27 +50,45 @@ public class PointOfInterest {
     private RequestQueue mRequestQueue;
     OverpassModel results;
     Context mapContext;
-    String boundingBox = "(29.709354854765827,-95.35668790340424,29.731896194504913,-95.31928449869156);";
+    List<Marker> markerZoom18 = new ArrayList<>();
+    List<Marker> markerZoom16 = new ArrayList<>();
 
-    public void getPOI(Context context, MapView mapView){
+    public List getPOI(Context context, MapView mapView){
+        // This method is executed to get all the point of interest listed below and within the
+        // bounding box. It's important to note that we only run this once when the main activity is
+        // created and save the results in a list.
 
         mv = mapView;
         mapContext = context;
 
+        String boundingBox = mapContext.getString(R.string.map_bounding_box);
         String URI = "https://overpass-api.de/api/interpreter?" +
                 "data=[out:json][timeout:25];(" +
                 "node[\"amenity\"~\"atm\",i]" + boundingBox +
                 "node[\"amenity\"~\"bar\",i]" + boundingBox +
-                //"way[\"amenity\"~\"bar\",i]" + boundingBox +
-                //"relation[\"amenity\"~\"bar\",i]" + boundingBox +
+                "node[\"amenity\"~\"emergency_phone\",i]" + boundingBox +
+                "node[\"amenity\"~\"fast_food\",i]" + boundingBox +
+                "way[\"amenity\"~\"fast_food\",i]" + boundingBox +
+                "node[\"amenity\"~\"library\",i]" + boundingBox +
+                "way[\"amenity\"~\"library\",i]" + boundingBox +
                 ");out%20center;>;out%20skel%20qt;";
-System.out.println(URI);
-        mRequestQueue = Volley.newRequestQueue(context);   // Create queue for volley
+
+        // Print the URI for debugging
+        Log.i("PointOfInterest", URI);
+
+        // Create queue for volley
+        mRequestQueue = Volley.newRequestQueue(context);
         fetchJsonResponse(URI);
-    }
+
+        // Finish up by storing the list in a list and return it
+        List<List> poiMarkers = new ArrayList<>();
+        poiMarkers.add(markerZoom16);
+        poiMarkers.add(markerZoom18);
+
+        return poiMarkers;
+    }// End getPOI
 
     private void fetchJsonResponse(String URI) {
-
         JsonObjectRequest req = new JsonObjectRequest(URI, new Response.Listener<JSONObject>() {
 
             @Override
@@ -61,12 +102,9 @@ System.out.println(URI);
 
             }
         }, new Response.ErrorListener() {
-
             @Override
             public void onErrorResponse(VolleyError error) {
-                // TODO Auto-generated method stub
-                System.out.println(error);
-
+                Log.e("PointOfInterest", error.toString());
             }
         });
         mRequestQueue.add(req);
@@ -78,36 +116,81 @@ System.out.println(URI);
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-    }
+    }// End fetchJsonResponse
 
     public void showSearchResults() {
 
-        List<OverpassElement> q = results.getElements();
+        List<OverpassElement> parsedList = results.getElements();
 
-        // Clear the mapview of any markers
-        // mv.closeCurrentTooltip();
-        // mv.clear();
-        // mv.clearMarkerFocus();
-
-        // Check if the search returns no results
-        if (q.isEmpty()) {
-            Toast.makeText(mapContext, "No Results", Toast.LENGTH_SHORT).show();
+        // Check if the search returns no results. This should never happen unless the overpass API
+        // isn't working or OSM data has been deleted.
+        if (parsedList.isEmpty()) {
+            Log.e("PointOfInterest", "Parsed JSON list is empty");
         } else {
-            for (int i = 0; i < q.size(); i++) {
-                if(q.get(i).getType().equals("node")) {
-                    Marker marker = new Marker("ATM", "ATM", new LatLng(
-                            q.get(i).getLat(), q.get(i).getLon()));
-                    marker.setToolTip(new CustomInfoWindow(mapContext, mv, q, i));
-                    if (q.get(i).getTags().getAmenity().equals("atm"))
-                        marker.setMarker(mapContext.getResources().getDrawable(R.drawable.bank_18));
-                    if (q.get(i).getTags().getAmenity().equals("bar"))
-                        marker.setMarker(mapContext.getResources().getDrawable(R.drawable.bar_18));
-                    mv.addMarker(marker);
-
+            // go through the results list and add the markers to zoom list 1 by 1
+            for (int i = 0; i < parsedList.size(); i++) {
+                // So with the Overpass results, we get nodes representing amenities such as fast
+                // food, bars, etc. But Overpass also includes nodes that represent ways and
+                // relations so we can draw them if wanted. However, we have no use for these nodes
+                // here and they only cause trouble. Therefore, we have to check and ensure the
+                // node we are adding to our POI list is representing a POI
+                if (parsedList.get(i).getTags() != null) {
+                    // Here we have to check if its a node which doesn't include a center point, or
+                    // a way/relation which does include a center point
+                    if (parsedList.get(i).getType().equals("node")) {
+                        addMarker(parsedList, new LatLng(parsedList.get(i).getLat(), parsedList.get(i).getLon()), i);
+                    } else if (parsedList.get(i).getType().equals("way")) {
+                        addMarker(parsedList, new LatLng(parsedList.get(i).getCenter().getLat(), parsedList.get(i).getCenter().getLon()), i);
+                    }
                 }
             }
-
-
         }
-    }
-}
+    }// End showSearchResults
+
+    public void addMarker( List<OverpassElement> parsedList, LatLng latLng, int i){
+        // This method is used to determine what the marker should look like as well as how it is treated.
+
+        Marker marker;
+        String title = parsedList.get(i).getTags().getName();
+        String ref = parsedList.get(i).getTags().getAmenity();
+        String type = parsedList.get(i).getTags().getAmenity();
+
+        // Create the new marker and set its infoWindow
+        marker = new Marker(mv, title, ref, latLng);
+        marker.setToolTip(new CustomInfoWindow(mapContext, mv, parsedList, i));
+
+        // This switch determines the amenity type
+       switch(type){
+           case "atm":
+               Drawable atmIcon = ContextCompat.getDrawable(mapContext, R.drawable.atm);
+               atmIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon)); // Icon color
+               marker.setMarker(atmIcon); // set the marker to the correct icon
+               markerZoom18.add(marker); // add the marker to the correct zoom level list
+               break;
+           case "library":
+               Drawable libraryIcon = ContextCompat.getDrawable(mapContext, R.drawable.library);
+               libraryIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
+               marker.setMarker(libraryIcon);
+               markerZoom16.add(marker);
+               break;
+           case "bar":
+               Drawable barIcon = ContextCompat.getDrawable(mapContext, R.drawable.bar);
+               barIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
+               marker.setMarker(barIcon);
+               markerZoom18.add(marker);
+               break;
+           case "emergency_phone":
+               Drawable emergencyPhoneIcon = ContextCompat.getDrawable(mapContext, R.drawable.emergency_phone);
+               emergencyPhoneIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
+               marker.setMarker(emergencyPhoneIcon);
+               markerZoom18.add(marker);
+               break;
+           case "fast_food":
+               Drawable fastFoodIcon = ContextCompat.getDrawable(mapContext, R.drawable.fast_food);
+               fastFoodIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
+               marker.setMarker(fastFoodIcon);
+               markerZoom18.add(marker);
+               break;
+       }
+    }// End addMarker
+}// End PointOfInterest class

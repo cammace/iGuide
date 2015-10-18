@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.overlay.PathOverlay;
 import com.mapbox.mapboxsdk.views.MapView;
 
@@ -85,12 +86,12 @@ public class RoutingActivity extends AppCompatActivity {
 
         drawRoute();
 
-        NoInfoMarker desMarker = new NoInfoMarker(null, null, new LatLng(route.getPaths().get(0).getPoints().getCoordinates().get(0).get(1),
+        Marker desMarker = new Marker(null, null, new LatLng(route.getPaths().get(0).getPoints().getCoordinates().get(0).get(1),
                 route.getPaths().get(0).getPoints().getCoordinates().get(0).get(0)));
         desMarker.setMarker(this.getResources().getDrawable(R.drawable.red_pin));
         mv.addMarker(desMarker);
 
-        NoInfoMarker startMarker = new NoInfoMarker(null, null, new LatLng(route.getPaths().get(0).getPoints().getCoordinates().get(route.getPaths().get(0).getPoints().getCoordinates().size()-1).get(1),
+        Marker startMarker = new Marker(null, null, new LatLng(route.getPaths().get(0).getPoints().getCoordinates().get(route.getPaths().get(0).getPoints().getCoordinates().size()-1).get(1),
                 route.getPaths().get(0).getPoints().getCoordinates().get(route.getPaths().get(0).getPoints().getCoordinates().size()-1).get(0)));
         startMarker.setMarker(this.getResources().getDrawable(R.drawable.green_pin));
         mv.addMarker(startMarker);

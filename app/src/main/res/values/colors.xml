@@ -5,4 +5,6 @@
     <color name="RoutePrimaryColor">#46C0FC</color>
     <color name="RouteDarkColor">#2895E1</color>
     <color name="BeginDirectionFABColor">#17C749</color>
+
+    <color name="map_amenity_icon">#666666</color>
 </resources>

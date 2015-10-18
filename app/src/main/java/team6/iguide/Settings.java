@@ -1,119 +1,101 @@
 package team6.iguide;
 
+/**
+ * iGuide
+ * Copyright (C) 2015 Cameron Mace
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-
+import android.widget.Toast;
 
 public class Settings extends AppCompatActivity {
 
-    private Toolbar toolbar;
-    // TODO Fix settings animation
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        // Display the toolbar
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Makes status bar color same as PrimaryDarkColor
         getWindow().setStatusBarColor(getResources().getColor(R.color.PrimaryDarkColor));
 
-        // Adds back button to toolbar
+        // Adds back button to toolbar and handle its onClick
         toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
-
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 NavUtils.navigateUpFromSameTask(Settings.this);
-               // overridePendingTransition(R.anim.pull_out, R.anim.hold);
             }
         });
-
-        // Clear search history
-        /*
-        SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
-        HelloSuggestionProvider.AUTHORITY, HelloSuggestionProvider.MODE);
-        suggestions.clearHistory();
-         */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-        LinearLayout root = (LinearLayout)findViewById(android.R.id.list).getParent().getParent().getParent();
-        Toolbar bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.settings_toolbar, root, false);
-        root.addView(bar, 0); // insert at top
-        bar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-
-*/
-      //  getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment()).commit();
-
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
+    }// End onCreate
 
     public static class MyPreferenceFragment extends PreferenceFragment {
+        // This is the settings/preference fragment. It's were all the interesting things in this
+        // activity occur.
         @Override
-        public void onCreate(final Bundle savedInstanceState)
-        {
+        public void onCreate(final Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.settings);
 
-          //  android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) getActivity().findViewById(R.id.toolbar);
-         //   ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+            Preference clearHistory = findPreference(getString(R.string.clear_history));
+            clearHistory.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
 
+                    // Build the alert dialog that displays when clear history is clicked
+                    AlertDialog.Builder clearHistoryConfirmation = new AlertDialog.Builder(getActivity());
+                    clearHistoryConfirmation.setTitle(getString(R.string.clear_history_alert_title));
+                    clearHistoryConfirmation.setMessage(getString(R.string.clear_history_alert_message));
+                    clearHistoryConfirmation.setPositiveButton(getString(R.string.clear_history_alert_positive),
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // When the clear button (positive button) is pressed we clear the
+                                    // SearchSuggestion database and display a toast alerting the user
+                                    SearchRecentSuggestions suggestions = new SearchRecentSuggestions(getActivity(),
+                                            SearchSuggestion.AUTHORITY, SearchSuggestion.MODE);
+                                    suggestions.clearHistory();
+                                    Toast.makeText(getActivity(), getString(R.string.clear_history_alert__positive_toast_msg), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                    clearHistoryConfirmation.setNegativeButton(getString(R.string.clear_history_alert_negative),
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // Do action when dialog is canceled, in our case, we don't don't have
+                                    // to do anything
+                                }
+                            });
+                    // Show the alert dialog
+                    clearHistoryConfirmation.show();
+                    return false;
+                }
+            });
         }
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-TODO add this code to allow user to clear search history
-SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
-        HelloSuggestionProvider.AUTHORITY, HelloSuggestionProvider.MODE);
-suggestions.clearHistory();
-
-
- */
+    }// End MyPreferenceFragment
+}// End Settings Activity

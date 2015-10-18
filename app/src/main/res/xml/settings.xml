@@ -2,9 +2,15 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!--
     <CheckBoxPreference
         android:key="pref_sync"
         android:title="test"
         android:summary="blahblah"
         android:defaultValue="true" />
+        -->
+
+    <Preference
+        android:key="@string/clear_history"
+        android:title="@string/clear_history" />
 </PreferenceScreen>
