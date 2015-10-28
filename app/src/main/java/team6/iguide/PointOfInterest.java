@@ -33,6 +33,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.overlay.ItemizedIconOverlay;
 import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.views.MapView;
 
@@ -163,31 +164,31 @@ public class PointOfInterest {
        switch(type){
            case "atm":
                Drawable atmIcon = ContextCompat.getDrawable(mapContext, R.drawable.atm);
-               atmIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon)); // Icon color
+               //atmIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon)); // Icon color
                marker.setMarker(atmIcon); // set the marker to the correct icon
                markerZoom18.add(marker); // add the marker to the correct zoom level list
                break;
            case "library":
                Drawable libraryIcon = ContextCompat.getDrawable(mapContext, R.drawable.library);
-               libraryIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
+               //libraryIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
                marker.setMarker(libraryIcon);
                markerZoom16.add(marker);
                break;
            case "bar":
                Drawable barIcon = ContextCompat.getDrawable(mapContext, R.drawable.bar);
-               barIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
+               //barIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
                marker.setMarker(barIcon);
                markerZoom18.add(marker);
                break;
            case "emergency_phone":
                Drawable emergencyPhoneIcon = ContextCompat.getDrawable(mapContext, R.drawable.emergency_phone);
-               emergencyPhoneIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
+               //emergencyPhoneIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
                marker.setMarker(emergencyPhoneIcon);
                markerZoom18.add(marker);
                break;
            case "fast_food":
                Drawable fastFoodIcon = ContextCompat.getDrawable(mapContext, R.drawable.fast_food);
-               fastFoodIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
+               //fastFoodIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
                marker.setMarker(fastFoodIcon);
                markerZoom18.add(marker);
                break;

@@ -16,12 +16,11 @@
     android:orientation="horizontal"
     android:background="@drawable/layout_bg">
 
-    <Button
+    <ImageButton
+        android:contentDescription="route"
         android:id="@+id/routing_button"
         android:paddingTop="4dp"
-        android:drawableTop="@drawable/ic_directions_walk_white_24dp"
-        android:text="Route"
-        android:textColor="#FFFFFF"
+        android:src="@drawable/routing_icon"
         android:layout_width="70dp"
         android:layout_height="match_parent"
         android:background="@color/PrimaryColor" />

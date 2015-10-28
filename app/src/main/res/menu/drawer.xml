@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="none">
+    <group android:checkableBehavior="single">
 
         <item
             android:id="@+id/poi"
@@ -47,7 +47,8 @@
 
     </group>
 
-    <group android:id="@+id/group_2">
+    <group android:id="@+id/group_2"
+           android:checkableBehavior="single">
         <item
             android:id="@+id/settings"
             android:checked="false"

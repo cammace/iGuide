@@ -7,4 +7,5 @@
     <color name="BeginDirectionFABColor">#17C749</color>
 
     <color name="map_amenity_icon">#666666</color>
+    <color name="primary_material_light">#2196f3</color>
 </resources>

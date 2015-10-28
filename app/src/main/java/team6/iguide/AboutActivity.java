@@ -1,5 +1,6 @@
 package team6.iguide;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +20,7 @@ public class AboutActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         // Makes status bar color same as PrimaryDarkColor
+        if(Build.VERSION.SDK_INT >= 21)
         getWindow().setStatusBarColor(getResources().getColor(R.color.PrimaryDarkColor));
 
         // Adds back button to toolbar

@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NavUtils;
@@ -44,7 +45,6 @@ import team6.iguide.OverpassModel.OverpassModel;
 
 public class DetailedInfoActivity extends AppCompatActivity{
 
-    private Toolbar toolbar;
     String title;
     String ref;
     String phone;
@@ -75,13 +75,14 @@ public class DetailedInfoActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.detailed_info_activity);
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         routeFAB();
 
         // Makes status bar color same as PrimaryDarkColor
+        if(Build.VERSION.SDK_INT >= 21)
         getWindow().setStatusBarColor(getResources().getColor(R.color.PrimaryDarkColor));
 
         // Adds back button to toolbar
@@ -145,6 +146,7 @@ public class DetailedInfoActivity extends AppCompatActivity{
                 switch(detailItems.get(position).key){
                     case "Phone":
                         Intent phoneCall = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + detailItems.get(position).value));
+                        //if(checkPermission(, )
                         startActivity(phoneCall);
                         break;
                     case "Website":

@@ -133,7 +133,7 @@ public class Search {
                     mv.addMarker(marker);
                     //mv.getController().animateTo(new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
                     //mv.getController().setZoom(19);
-                    mv.getController().setZoomAnimated(19, new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()), true, true);
+                    mv.getController().setZoomAnimated(18, new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()), true, true);
 
                 }
                 // Check if the search returned a room
@@ -152,7 +152,7 @@ public class Search {
                     mv.addMarker(marker);
                     //mv.getController().animateTo(new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
                     //mv.getController().setZoom(21);
-                    mv.getController().setZoomAnimated(19, new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()), true, true);
+                    mv.getController().setZoomAnimated(20, new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()), true, true);
 
                 }
             } else {

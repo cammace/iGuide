@@ -2,6 +2,7 @@ package team6.iguide;
 
 import android.content.res.ColorStateList;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NavUtils;
@@ -39,6 +40,7 @@ public class RoutingActivity extends AppCompatActivity {
         //setSupportActionBar(toolbar);
 
         // Makes status bar color same as PrimaryDarkColor
+        if(Build.VERSION.SDK_INT >= 21)
         getWindow().setStatusBarColor(getResources().getColor(R.color.PrimaryDarkColor));
 
         // Adds back button to toolbar

@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
     int updateBusTimer = 0;
     MenuItem previousDrawerMenuItem;
     List<List> poiMarkers = new ArrayList<>();
-    boolean poiShow = true;
+    boolean poiShow = false;
 
     // Tiles
     private TilesOverlay campusLoopTiles;
@@ -236,7 +236,8 @@ public class MainActivity extends AppCompatActivity {
                             }
                         } else {
                             poiShow = false;
-                            mv.clear();
+                            mv.removeMarkers(poiMarkers.get(1));
+                            mv.removeMarkers(poiMarkers.get(0));
                             mv.clearMarkerFocus();
                         }
                         break;
@@ -283,7 +284,6 @@ public class MainActivity extends AppCompatActivity {
         //calling sync state is necessary or else your hamburger icon wont show up
         actionBarDrawerToggle.syncState();
     }
-
 
 
 
@@ -428,13 +428,6 @@ public class MainActivity extends AppCompatActivity {
         PointOfInterest pointOfInterest = new PointOfInterest();
         poiMarkers = pointOfInterest.getPOI(MainActivity.this, mv);
 
-        if (mv.getZoomLevel() >= 18 && poiShow) {
-            mv.addMarkers(poiMarkers.get(1));
-        }
-        if (mv.getZoomLevel() >= 16 && poiShow) {
-            mv.addMarkers(poiMarkers.get(0));
-        }
-
         mv.addListener(new DelayedMapListener(new MapListener() {
             @Override
             public void onScroll(ScrollEvent event) {
@@ -445,7 +438,9 @@ public class MainActivity extends AppCompatActivity {
             public void onZoom(ZoomEvent event) {
                 //System.out.println(mv.getZoomLevel());
                 mv.closeCurrentTooltip();
-                mv.clear();
+                //if(mv.getOverlays().contains(poiMarkers.get(0))) mv.getOverlays().remove(poiMarkers.get(0));
+                //if(mv.getOverlays().contains(poiMarkers.get(1))) mv.getOverlays().remove(poiMarkers.get(1));
+                if(poiShow) mv.clear();
 
                 if (mv.getZoomLevel() >= 18 && poiShow) {
                     mv.addMarkers(poiMarkers.get(1));

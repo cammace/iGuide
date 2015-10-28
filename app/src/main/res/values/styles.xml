@@ -2,18 +2,25 @@
 <resources>
 
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!--
         <item name="android:colorPrimary">@color/PrimaryColor</item>
         <item name="android:colorPrimaryDark">@color/PrimaryDarkColor</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <!--
-        <item name="android:dropDownItemStyle">@style/searchSuggestionStyle</item>
-        -->
-        <item name="android:background">#FFF</item>
-        <item name="colorAccent">@color/PrimaryColor</item>
+
         <item name="android:windowContentTransitions">true</item>
-        <!-- Customize your theme here. -->
+        <item name="android:background">#FFF</item>
+        -->
+
+
+        <item name="colorAccent">@color/PrimaryColor</item>
+
+
     </style>
 
+
+    <!--
+       <item name="android:dropDownItemStyle">@style/searchSuggestionStyle</item>
+       -->
 <!--
     <style name="searchSuggestionStyle" parent="Widget.AppCompat.SearchView">
 -->

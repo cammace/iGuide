@@ -6,12 +6,14 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,8 +41,11 @@ public class CustomInfoWindow extends InfoWindow {
     public CustomInfoWindow(Context context, final MapView mv, final List<OverpassElement> searchResults, final int listPosition) {
         super(R.layout.infowindow_custom, mv);
         this.mContext = context;
-        getView().findViewById(R.id.mainpanal).setClipToOutline(true);
-        mView.setElevation(24);
+
+        if(Build.VERSION.SDK_INT >= 21) {
+            getView().findViewById(R.id.mainpanal).setClipToOutline(true);
+            mView.setElevation(24);
+        }
 
         if(searchResults.get(listPosition).getType().equals("node")){
             desLat = searchResults.get(listPosition).getLat();
@@ -50,7 +55,7 @@ public class CustomInfoWindow extends InfoWindow {
             desLon = searchResults.get(listPosition).getCenter().getLon();
         }
 
-        Button routing = (Button)mView.findViewById(R.id.routing_button);
+        ImageButton routing = (ImageButton)mView.findViewById(R.id.routing_button);
         routing.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
