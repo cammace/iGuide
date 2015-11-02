@@ -15,5 +15,5 @@
         android:icon="@drawable/ic_layers_white_24dp"
         android:orderInCategory="300"
         android:title="@string/floor_level_spinner"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 </menu>

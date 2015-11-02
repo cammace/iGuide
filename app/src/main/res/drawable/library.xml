@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<vector android:height="16dp" android:viewportHeight="17.1"
-    android:viewportWidth="20.2" android:width="18dp" xmlns:android="http://schemas.android.com/apk/res/android">
-    <path android:fillColor="@color/map_amenity_icon" android:pathData="M1.4,1.1v10c3,3 7,2 7,4h1v-9C9.4,3.1 4.4,3.1 1.4,1.1z"/>
-    <path android:fillColor="@color/map_amenity_icon" android:pathData="M10.7,6.1v9h1c0,-2 4,-1 7,-4v-10C15.7,3.1 10.7,3.1 10.7,6.1z"/>
-</vector>

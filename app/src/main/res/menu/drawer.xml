@@ -19,6 +19,7 @@
 
     <group
         android:id="@+id/group_transit"
+        android:checkableBehavior="single"
         >
 
         <item
@@ -48,7 +49,7 @@
     </group>
 
     <group android:id="@+id/group_2"
-           android:checkableBehavior="single">
+           android:checkableBehavior="none">
         <item
             android:id="@+id/settings"
             android:checked="false"

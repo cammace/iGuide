@@ -19,7 +19,10 @@ package team6.iguide;
  */
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.VectorDrawable;
 import android.support.v4.content.ContextCompat;
@@ -33,6 +36,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.overlay.Icon;
 import com.mapbox.mapboxsdk.overlay.ItemizedIconOverlay;
 import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.views.MapView;
@@ -40,6 +44,7 @@ import com.mapbox.mapboxsdk.views.MapView;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import team6.iguide.OverpassModel.OverpassElement;
@@ -51,13 +56,15 @@ public class PointOfInterest {
     private RequestQueue mRequestQueue;
     OverpassModel results;
     Context mapContext;
-    List<Marker> markerZoom18 = new ArrayList<>();
-    List<Marker> markerZoom16 = new ArrayList<>();
+    List<Marker> markerZoom18 = new LinkedList<>();
+    List<Marker> markerZoom16 = new LinkedList<>();
 
     public List getPOI(Context context, MapView mapView){
         // This method is executed to get all the point of interest listed below and within the
         // bounding box. It's important to note that we only run this once when the main activity is
         // created and save the results in a list.
+
+
 
         mv = mapView;
         mapContext = context;
@@ -72,6 +79,10 @@ public class PointOfInterest {
                 "way[\"amenity\"~\"fast_food\",i]" + boundingBox +
                 "node[\"amenity\"~\"library\",i]" + boundingBox +
                 "way[\"amenity\"~\"library\",i]" + boundingBox +
+                "node[\"amenity\"~\"restaurant\",i]" + boundingBox +
+                "way[\"amenity\"~\"restaurant\",i]" + boundingBox +
+                "node[\"shop\"~\"convenience\",i]" + boundingBox +
+                "way[\"shop\"~\"convenience\",i]" + boundingBox +
                 ");out%20center;>;out%20skel%20qt;";
 
         // Print the URI for debugging
@@ -152,9 +163,13 @@ public class PointOfInterest {
         // This method is used to determine what the marker should look like as well as how it is treated.
 
         Marker marker;
+        String type;
+
         String title = parsedList.get(i).getTags().getName();
         String ref = parsedList.get(i).getTags().getAmenity();
-        String type = parsedList.get(i).getTags().getAmenity();
+
+        if(parsedList.get(i).getTags().getAmenity() != null) type = parsedList.get(i).getTags().getAmenity();
+        else  type = parsedList.get(i).getTags().getShop();
 
         // Create the new marker and set its infoWindow
         marker = new Marker(mv, title, ref, latLng);
@@ -164,32 +179,43 @@ public class PointOfInterest {
        switch(type){
            case "atm":
                Drawable atmIcon = ContextCompat.getDrawable(mapContext, R.drawable.atm);
-               //atmIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon)); // Icon color
+               if(marker.getTitle() == null) marker.setTitle("ATM");
                marker.setMarker(atmIcon); // set the marker to the correct icon
                markerZoom18.add(marker); // add the marker to the correct zoom level list
                break;
            case "library":
-               Drawable libraryIcon = ContextCompat.getDrawable(mapContext, R.drawable.library);
-               //libraryIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
+              Drawable libraryIcon = ContextCompat.getDrawable(mapContext, R.drawable.library);
                marker.setMarker(libraryIcon);
                markerZoom16.add(marker);
                break;
            case "bar":
                Drawable barIcon = ContextCompat.getDrawable(mapContext, R.drawable.bar);
-               //barIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
                marker.setMarker(barIcon);
                markerZoom18.add(marker);
                break;
            case "emergency_phone":
                Drawable emergencyPhoneIcon = ContextCompat.getDrawable(mapContext, R.drawable.emergency_phone);
-               //emergencyPhoneIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
+               if(marker.getTitle() == null) marker.setTitle("Emergency Phone");
+               marker.setDescription("");
                marker.setMarker(emergencyPhoneIcon);
                markerZoom18.add(marker);
                break;
            case "fast_food":
                Drawable fastFoodIcon = ContextCompat.getDrawable(mapContext, R.drawable.fast_food);
-               //fastFoodIcon.setTint(mapContext.getResources().getColor(R.color.map_amenity_icon));
                marker.setMarker(fastFoodIcon);
+               marker.setDescription("Fast Food");
+               markerZoom18.add(marker);
+               break;
+           case "restaurant":
+               Drawable restaurantIcon = ContextCompat.getDrawable(mapContext, R.drawable.restaurant);
+               marker.setMarker(restaurantIcon);
+               marker.setDescription("Restaurant");
+               markerZoom18.add(marker);
+               break;
+           case "convenience":
+               Drawable convenienceIcon = ContextCompat.getDrawable(mapContext, R.drawable.grocery);
+               marker.setMarker(convenienceIcon);
+               marker.setDescription("Convenience Store");
                markerZoom18.add(marker);
                break;
        }

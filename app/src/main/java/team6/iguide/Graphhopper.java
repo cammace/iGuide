@@ -30,15 +30,15 @@ import team6.iguide.GraphhopperModel.GraphhopperModel;
 public class Graphhopper{
 
     private RequestQueue mRequestQueue;
-    MapView mv;
+    //MapView mv;
     GraphhopperModel routeInfo;
     //static PathOverlay line;
     Context mapContext;
 
-    public void executeRoute(Context context, MapView mapView, double lat, double lon, LatLng userLocation){
+    public void executeRoute(Context context, double lat, double lon, LatLng userLocation){
 
         mapContext = context;
-        mv = mapView;
+        //mv = mapView;
 /*
         if(line == null)
             line = new PathOverlay(mapContext.getResources().getColor(R.color.RoutePrimaryColor), 10);
@@ -97,6 +97,7 @@ public class Graphhopper{
                 Bundle bundle = new Bundle();
                 bundle.putSerializable("ROUTING_RESULTS", routeInfo);
                 intent.putExtras(bundle);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 mapContext.startActivity(intent);
                 //drawRoute();
 

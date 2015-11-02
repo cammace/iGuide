@@ -8,11 +8,13 @@
     <string name="floor_1_key">cammace.nc77c38k</string>
     <string name="floor_2_key">cammace.nc77kk5a</string>
 
+    <string name="userLocationNotWithinBB">Your currently not located on campus</string>
+
     <string name="busTrackingURL">http://uhpublic.etaspot.net/service.php?service=get_vehicles&amp;includeETAData=1&amp;orderedETAArray=1&amp;token=TESTING</string>
 
     <string name="noBusOnRoute">No buses currently running route</string>
 
-    <string name="title_activity_about">About app</string>
+    <string name="title_activity_about">About</string>
     <string name="title_activity_detailed_info">Detailed Info</string>
     <string name="title_activity_routing">Routing</string>
     

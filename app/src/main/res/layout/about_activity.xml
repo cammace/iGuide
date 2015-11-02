@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Settings"
+    tools:context=".AboutActivity"
     android:orientation="vertical"
     android:fitsSystemWindows="true">
 
@@ -14,9 +14,10 @@
         layout="@layout/tool_bar"
         />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="placeholder"/>
+    <fragment
+        android:name="team6.iguide.AboutActivity$aboutFragment"
+        android:id="@+id/about_list"
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent" />
 
 </LinearLayout>

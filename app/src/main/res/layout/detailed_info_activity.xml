@@ -109,6 +109,7 @@
                 android:id="@+id/detail_info_title"
                 android:textSize="24sp"
                 android:paddingStart="72dp"
+                android:paddingLeft="72dp"
                 android:paddingBottom="28dp"
                 android:textColor="#E2E3E2" />
 
@@ -132,7 +133,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:clickable="true"
-        android:src="@drawable/ic_directions_walk_white_24dp"
+        android:src="@drawable/routing_icon"
         app:layout_anchor="@id/viewA"
         app:layout_anchorGravity="bottom|right|end"/>
 

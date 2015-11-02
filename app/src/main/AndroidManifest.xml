@@ -81,5 +81,15 @@
                 android:value="team6.iguide.MainActivity" />
         </activity>
 
+        <!-- License Activity -->
+        <activity
+            android:name=".LicenseActivity"
+            android:label="@string/title_license_activity"
+            android:parentActivityName=".AboutActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="team6.iguide.AboutActivity" />
+        </activity>
+
     </application>
 </manifest>

@@ -43,6 +43,8 @@ public class OverpassTags implements Serializable{
     @Expose
     private String amenity;
     @Expose
+    private String shop;
+    @Expose
     private String fax;
     @Expose
     private String phone;
@@ -114,6 +116,14 @@ public class OverpassTags implements Serializable{
 
     public void setAmenity(String amenity){
         this.amenity = amenity;
+    }
+
+    public String getShop(){
+        return shop;
+    }
+
+    public void setShop(String shop){
+        this.shop = shop;
     }
 
     public String getAddrCity() {

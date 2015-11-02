@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Preference
+        android:key="Version"
+        android:title="Version" />
+
+    <!-- TODO change uri to google play store once app is submitted -->
+    <Preference
+        android:key="Rate App"
+        android:title="Rate App"
+        android:summary="Give or update your rating">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="http://google.com" />
+        </Preference>
+
+    <Preference
+        android:key="Authors"
+        android:title="Authors"
+        android:summary="Cameron Mace"/>
+
+    <Preference
+        android:key="Licenses"
+        android:title="Licenses">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="team6.iguide"
+            android:targetClass="team6.iguide.LicenseActivity" />
+
+    </Preference>
+
+</PreferenceScreen>

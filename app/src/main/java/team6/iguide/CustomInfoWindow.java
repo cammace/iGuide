@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -17,6 +18,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.views.InfoWindow;
@@ -37,6 +39,8 @@ public class CustomInfoWindow extends InfoWindow {
     String country;
     Double desLat;
     Double desLon;
+    BoundingBox scrollLimit = new BoundingBox(29.731896194504913, -95.31928449869156, 29.709354854765827, -95.35668790340424);
+
 
     public CustomInfoWindow(Context context, final MapView mv, final List<OverpassElement> searchResults, final int listPosition) {
         super(R.layout.infowindow_custom, mv);
@@ -64,13 +68,12 @@ public class CustomInfoWindow extends InfoWindow {
                     return;
                 }
 
-                //TODO check to make sure users location is within bounding box, otherwise return;
+                if(scrollLimit.contains(mv.getUserLocation())){
+                    MainActivity mainActivity = new MainActivity();
+                    mainActivity.displayRouting(mView.getContext(), mv, desLat, desLon);
+                    close();
+                } else Toast.makeText(mContext, mContext.getString(R.string.userLocationNotWithinBB), Toast.LENGTH_SHORT).show();
 
-                MainActivity mainActivity = new MainActivity();
-                mainActivity.displayRouting(mView.getContext(), mv, desLat, desLon);
-
-
-                close();
             }
         });
 
@@ -115,6 +118,15 @@ public class CustomInfoWindow extends InfoWindow {
                     bundle.putDouble("DESLAT", desLat);
                     bundle.putDouble("DESLON", desLon);
 
+                    if(mv.getUserLocation() == null) {
+                        Log.v("CustomInfoWindow", "Users location not within map bounds or can't be found");
+                        bundle.putBoolean("FOUNDUSERLOCATION", false);
+                    }
+                    else {
+                        bundle.putBoolean("FOUNDUSERLOCATION", true);
+                        bundle.putDouble("CURRENTLAT", mv.getUserLocation().getLatitude());
+                        bundle.putDouble("CURRENTLON", mv.getUserLocation().getLongitude());
+                    }
                     Intent intent = new Intent(mView.getContext(), DetailedInfoActivity.class);
                     intent.putExtras(bundle);
                     mContext.startActivity(intent/*, options.toBundle()*/);

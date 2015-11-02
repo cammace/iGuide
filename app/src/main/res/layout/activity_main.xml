@@ -63,14 +63,23 @@
 
     </LinearLayout>
 
+
+
     <android.support.design.widget.NavigationView
         android:id="@+id/navigation_view"
         android:layout_height="match_parent"
         android:layout_width="wrap_content"
         android:layout_gravity="start"
         app:headerLayout="@layout/header"
-        app:menu="@menu/drawer"
-        />
+        app:menu="@menu/drawer">
+
+        <!--
+    <ExpandableListView
+        android:id="@+id/expanded_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        />-->
+    </android.support.design.widget.NavigationView>
 
 
 

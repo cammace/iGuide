@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -53,7 +54,7 @@ public class RoutingActivity extends AppCompatActivity {
             }
         });
 
-        begindirectionFAB();
+        beginDirectionFAB();
 
         Bundle bundle = getIntent().getExtras();
         Serializable serializable = bundle.getSerializable("ROUTING_RESULTS");
@@ -115,7 +116,7 @@ public class RoutingActivity extends AppCompatActivity {
         mv.invalidate();
     }
 
-    private void begindirectionFAB(){
+    private void beginDirectionFAB(){
         // FAB for myLocationButton
         FloatingActionButton FAB;
         FAB = (FloatingActionButton) findViewById(R.id.begin_direction_fab);
@@ -124,7 +125,7 @@ public class RoutingActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Log.i("RoutingActivity", "begin Routing");
+                Toast.makeText(getApplicationContext(), "Turn-by-turn navigation coming soon", Toast.LENGTH_SHORT).show();
                 //mv.goToUserLocation(true);
 
             }
@@ -159,7 +160,10 @@ public class RoutingActivity extends AppCompatActivity {
             sb.append(minutes);
             sb.append(" Minutes ");
         }
-
+        if(days == 0 && hours == 0 && minutes == 0) {
+            sb.append(seconds);
+            sb.append(" Seconds ");
+        }
         return(sb.toString());
     }
 

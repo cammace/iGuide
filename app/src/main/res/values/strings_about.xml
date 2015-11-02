@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_license_activity">License</string>
+
+
+
+
+
+
+
+
+
+    <string name="other_library_licenses">
+        <b>MapBox</b>\n
+        Copyright &#169; 2014 Mapbox Inc.\n
+        \n
+        <b>Open Street Map</b>\n
+        Copyright &#169; 2015 OpenStreetMap Foundation (OSMF)\n
+        \n
+        <b>Overpass API</b>\n
+        Copyright &#169; 2007 Free Software Foundation, Inc.\n
+        \n
+        <b>Graphhopper API</b>\n
+        Copyright &#169; 2012-2015 Peter Karich\n
+        \n
+        <b>Volley API</b>\n
+        Copyright &#169; 2011 The Android Open Source Project\n
+        \n
+        <b>CircularImageView</b>\n
+        Copyright &#169; 2015 Mikhael LOPEZ \n
+    </string>
+
+    <string name="license">
+        \n
+        <b>iGuide</b>\n
+        Copyright &#169; 2015 Cameron Mace \n
+        \n
+        This program is free software: you can redistribute it and/or modify
+         it under the terms of the GNU General Public License as published by
+         the Free Software Foundation, either version 3 of the License, or
+         (at your option) any later version.\n
+        \n
+        This program is distributed in the hope that it will be useful,
+         but WITHOUT ANY WARRANTY; without even the implied warranty of
+         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+         GNU General Public License for more details.\n
+        \n
+        see http://www.gnu.org/licenses for the full GNU General Public License.\n</string>
+
+</resources>

@@ -116,18 +116,22 @@ public class Search {
             Toast.makeText(mapContext, "No Results", Toast.LENGTH_SHORT).show();
         } else {
             // This counts how many of the search results are valid results
+
             int pinCount = 0;
             for (int i = 0; i < q.size(); i++) {
-                if (q.get(i).getType().equals("way") || q.get(i).getType().equals("relation")) {
+                if (q.get(i).getType().equals("way") || q.get(i).getType().equals("relation") || q.get(i).getType().equals("node") && q.get(i).getTags() != null) {
                     pinCount++;
                 }
             }
 
             if (pinCount == 1) {
                 // Check if the search returned a building
-                if (q.get(0).getTags().getBuilding() != null || q.get(0).getTags().getLanduse() != null || q.get(0).getTags().getLeisure() != null) {
-                    Marker marker = new Marker(q.get(0).getTags().getName(), q.get(0).getTags().getRef(), new LatLng(
+                if (q.get(0).getTags().getBuilding() != null || q.get(0).getTags().getLanduse() != null || q.get(0).getTags().getLeisure() != null || q.get(0).getTags().getAmenity() != null) {
+                    Marker marker;
+                    if(q.get(0).getType().equals("way")) marker = new Marker(q.get(0).getTags().getName(), q.get(0).getTags().getRef(), new LatLng(
                             q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
+                    else marker = new Marker(q.get(0).getTags().getName(), q.get(0).getTags().getRef(), new LatLng(
+                           q.get(0).getLat(), q.get(0).getLon()));
                     marker.setToolTip(new CustomInfoWindow(mapContext, mv, q, 0));
                     marker.setMarker(mapContext.getResources().getDrawable(R.drawable.red_pin));
                     mv.addMarker(marker);
@@ -157,17 +161,28 @@ public class Search {
                 }
             } else {
                 for (int i = 0; i < pinCount; i++) {
+                    Marker marker;
                     if (q.get(i).getType().equals("way") || q.get(i).getType().equals("relation")) {
-                        Marker marker = new Marker(q.get(i).getTags().getName(), q.get(i).getTags().getRef(), new LatLng(
+                        marker = new Marker(q.get(i).getTags().getName(), q.get(i).getTags().getRef(), new LatLng(
                                 q.get(i).getCenter().getLat(), q.get(i).getCenter().getLon()));
                         marker.setToolTip(new CustomInfoWindow(mapContext, mv, q, i));
                         marker.setMarker(mapContext.getResources().getDrawable(R.drawable.red_pin));
                         mv.addMarker(marker);
 
                         resultBBList.add(new LatLng(q.get(i).getCenter().getLat(), q.get(i).getCenter().getLon()));
+                    }
+                    else if(q.get(i).getType().equals("node") && q.get(i).getTags() != null){
+                        marker = new Marker(q.get(i).getTags().getName(), q.get(i).getTags().getRef(), new LatLng(
+                                q.get(i).getLat(), q.get(i).getLon()));
+                        marker.setToolTip(new CustomInfoWindow(mapContext, mv, q, i));
+                        marker.setMarker(mapContext.getResources().getDrawable(R.drawable.red_pin));
+                        mv.addMarker(marker);
+
+                        resultBBList.add(new LatLng(q.get(i).getLat(), q.get(i).getLon()));
+                    }
+
 
                         //mv.getController().setZoom(17);
-                    }
                 }
                 //BoundingBox resultBB = new BoundingBox(BoundingBox.fromLatLngs(resultBBList));
                 //mv.zoomToBoundingBox(resultBB);

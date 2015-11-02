@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -22,6 +23,7 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.RequestQueue;
@@ -30,6 +32,9 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
+import com.mapbox.mapboxsdk.geometry.BoundingBox;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.views.MapView;
 
 import org.json.JSONObject;
 
@@ -67,6 +72,9 @@ public class DetailedInfoActivity extends AppCompatActivity{
     String OC;
     Double desLat;
     Double desLon;
+    Double currentLat;
+    Double currentLon;
+    Boolean foundUserLocation;
 
     SimpleDateFormat inputParser = new SimpleDateFormat(inputFormat, Locale.US);
 
@@ -109,6 +117,12 @@ public class DetailedInfoActivity extends AppCompatActivity{
         image = bundle.getString("IMAGE");
         desLat = bundle.getDouble("DESLAT");
         desLon = bundle.getDouble("DESLON");
+        foundUserLocation = bundle.getBoolean("FOUNDUSERLOCATION");
+
+        if(foundUserLocation) {
+            currentLat = bundle.getDouble("CURRENTLAT");
+            currentLon = bundle.getDouble("CURRENTLON");
+        }
 
         if(image != null) new DownloadImageTask((ImageView) findViewById(R.id.building_image)).execute(image);
 
@@ -292,10 +306,26 @@ public class DetailedInfoActivity extends AppCompatActivity{
             @Override
             public void onClick(View v) {
 
-                System.out.println("begin routing");
-                //MainActivity mainActivity = new MainActivity();
-                //mainActivity.displayRouting(getApplicationContext(), null, desLat, desLon);
+                if(foundUserLocation) {
+                    Graphhopper graphhopper = new Graphhopper();
+                    graphhopper.executeRoute(getApplicationContext(), desLat, desLon, new LatLng(currentLat, currentLon));
+                }
+                else Toast.makeText(getApplicationContext(), "You have to be on campus in order to route", Toast.LENGTH_SHORT).show();
 
+
+                /*
+                if(mv.getUserLocation() == null){
+                    Toast.makeText(mContext, "Can't find your location on map", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if(scrollLimit.contains(mv.getUserLocation())){
+                    MainActivity mainActivity = new MainActivity();
+                    mainActivity.displayRouting(mView.getContext(), mv, desLat, desLon);
+                    close();
+                } else Toast.makeText(mContext, mContext.getString(R.string.userLocationNotWithinBB), Toast.LENGTH_SHORT).show();
+
+*/
 
             }
         });

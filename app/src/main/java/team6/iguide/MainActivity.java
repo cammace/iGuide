@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
     private SearchView searchView;
     private MapView mv;
     public  View progressBar;
-    int currentFloor;
+    static int currentFloor;
     private RequestQueue mRequestQueue;
     List<LatLng> start = new ArrayList<>();
     List<LatLng> finish = new ArrayList<>();
@@ -109,15 +109,17 @@ public class MainActivity extends AppCompatActivity {
     MenuItem previousDrawerMenuItem;
     List<List> poiMarkers = new ArrayList<>();
     boolean poiShow = false;
+    boolean busRouteShow = false;
+    int currentBusRouteShowing;
 
     // Tiles
     private TilesOverlay campusLoopTiles;
     private TilesOverlay outerLoopTiles;
     private TilesOverlay eastwoodErpLineTiles;
     private TilesOverlay erpExpressTiles;
-    TilesOverlay floorLevel;
+    static TilesOverlay floorLevel;
 
-
+    BoundingBox scrollLimit = new BoundingBox(29.731896194504913, -95.31928449869156, 29.709354854765827, -95.35668790340424);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,12 +177,12 @@ public class MainActivity extends AppCompatActivity {
         // Initialize MapView
         if(mv == null) setMap();
 
-        changeFloorLevel(getApplicationContext(), mv, 0);
+        // Get the POI and populate list so it's ready if user toogles POI in menu
+        PointOfInterest pointOfInterest = new PointOfInterest();
+        poiMarkers = pointOfInterest.getPOI(MainActivity.this, mv);
     }
 
     private void navigationDrawer(){
-
-        //String[] transitItems = {"transit 1", "transit 2", "transit 3"};
 
         //Initializing NavigationView
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
@@ -195,10 +197,12 @@ public class MainActivity extends AppCompatActivity {
             // This method will trigger on item Click of navigation menu
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
-
                 //Checking if the item is in checked state or not, if not make it in checked state
                 if (menuItem.isChecked()) menuItem.setChecked(false);
                 else menuItem.setChecked(true);
+
+                poiShow = false;
+                if(busRouteShow) stopBusRoute(currentBusRouteShowing);
 
                 //Closing drawer on item click
                 drawerLayout.closeDrawers();
@@ -211,19 +215,19 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.campus_loop:
                         // If bus route isn't showing on mapView then display it, else remove it.
                         if (menuItem.isChecked()) playBusRoute(1);
-                        else stopBusRoute(1);
+                        //else stopBusRoute(1);
                         break;
                     case R.id.outer_loop:
                         if (menuItem.isChecked()) playBusRoute(3);
-                        else stopBusRoute(3);
+                        //else stopBusRoute(3);
                         break;
                     case R.id.eastwood_erp_line:
                         if (menuItem.isChecked()) playBusRoute(2);
-                        else stopBusRoute(2);
+                        //else stopBusRoute(2);
                         break;
                     case R.id.erp_express:
                         if (menuItem.isChecked()) playBusRoute(4);
-                        else stopBusRoute(4);
+                        //else stopBusRoute(4);
                         break;
                     case R.id.poi:
                         if (menuItem.isChecked() && !poiShow) {
@@ -240,12 +244,15 @@ public class MainActivity extends AppCompatActivity {
                             mv.removeMarkers(poiMarkers.get(0));
                             mv.clearMarkerFocus();
                         }
+                        mv.invalidate();
                         break;
                     case R.id.settings:
+                        menuItem.setChecked(false);
                         intent = new Intent(MainActivity.this, Settings.class);
                         startActivity(intent);
                         break;
                     case R.id.help:
+                        menuItem.setChecked(false);
                         DialogFragment newFragmentHelp = new Help();
                         newFragmentHelp.show(getSupportFragmentManager(), "Help & Feedback");
                         break;
@@ -285,21 +292,35 @@ public class MainActivity extends AppCompatActivity {
         actionBarDrawerToggle.syncState();
     }
 
+    @Override
+    public void onBackPressed(){
+        // We had to override the onBackPressed within the mainActivity because previously it would
+        // destroy the activity and when the user returned to the app, the entire activity would be
+        // recreated. We now create an intent ourselves that takes the user to the home screen
+        // (like it should) and puts the mainActivity in the foreground.
+        Intent setIntent = new Intent(Intent.ACTION_MAIN);
+        setIntent.addCategory(Intent.CATEGORY_HOME);
+        setIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(setIntent);
+    }
 
 
-
-
-    // This method sets up the floating action button (FAB) and handles the on click.
     private void userLocationFAB(){
-        // FAB for myLocationButton
-        FloatingActionButton FAB;
-        FAB = (FloatingActionButton) findViewById(R.id.myLocationButton);
+        // This method sets up the floating action button (FAB) and handles the on click which will
+        // goto the users current location.
+        FloatingActionButton FAB = (FloatingActionButton) findViewById(R.id.myLocationButton);
         FAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                mv.goToUserLocation(true);
-
+                // When the FAB is clicked, we first check that we can find the user location and if
+                // they are within the map scrolling limit. If so we move the mapView to the user
+                // location. Otherwise, we display a message
+                if (mv.getUserLocation() != null) {
+                    if (scrollLimit.contains(mv.getUserLocation())) mv.goToUserLocation(true);
+                    else
+                        Toast.makeText(getApplicationContext(), getString(R.string.userLocationNotWithinBB), Toast.LENGTH_SHORT).show();
+                }
+                else Toast.makeText(getApplicationContext(), "Your current location cannot be found", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -310,6 +331,9 @@ public class MainActivity extends AppCompatActivity {
         // Clear all bus markers
         // TODO fix so that it only clears bus markers instead of all
         mv.clear();
+
+        // Change boolean to false so globally we know we are no long showing a bus route
+        busRouteShow = false;
 
         // Since we are removing whatever current route is showing, we also want to uncheck the item
         // in the navigation drawer
@@ -352,7 +376,6 @@ public class MainActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -363,28 +386,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void showSearch(boolean visible) {
-        if (visible)
-            MenuItemCompat.expandActionView(searchItem);
-        else
-            MenuItemCompat.collapseActionView(searchItem);
+        // This affects whether or not the search EditText view is shown or not for the search.
+        // when the activity is recreated the searchItem is null and caused the app to crash
+        // occasionally in the past. To fix this, we simply wrapped all code in an if statement.
+        if(searchItem != null) {
+            if (visible) MenuItemCompat.expandActionView(searchItem);
+            else MenuItemCompat.collapseActionView(searchItem);
+        }
+
+
+
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
+        // This method handles actions when a toolbar item is clicked on.
         int id = item.getItemId();
 
+        // If our floor level icon is selected we inflate the menu and wait for user to select a specific floor.
         if (id == R.id.floor) {
 
-        //Creating the instance of PopupMenu
+        // Creating the instance of PopupMenu
         PopupMenu popup = new PopupMenu(this, findViewById(R.id.floor));
-        //Inflating the Popup using xml file
+        // Inflating the Popup using xml file
         popup.getMenuInflater().inflate(R.menu.floor_level, popup.getMenu());
 
-        //registering popup with OnMenuItemClickListener
+        // This is where we register a clicked menu item and perform action of that click.
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem item) {
-
 
                 if(item.getTitle().equals("Floor 1")) {
                     if (currentFloor == 0) Toast.makeText(getApplicationContext(), "Already showing Floor 1", Toast.LENGTH_SHORT).show();
@@ -399,7 +428,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 if(item.getTitle().equals("Floor 3")) {
-                    System.out.println("Floor 3");
                     if (currentFloor == 2) Toast.makeText(getApplicationContext(), "Already showing Floor 3", Toast.LENGTH_SHORT).show();
                     else{
                         changeFloorLevel(getApplicationContext(), mv, 2);
@@ -411,7 +439,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        popup.show(); //showing popup menu*/
+            popup.show(); //showing popup menu*/
             return true;
         }
 
@@ -419,53 +447,82 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setMap() {
-
+        // Method is executed only once when the activity is created. We begin by actually creating
+        // the mapView and setting its rules, such as max zoom, beginning center and zoom, etc.
         mv = (MapView) this.findViewById(R.id.mapview);
         mv.setCenter(new LatLng(29.7199489, -95.3422334));
         mv.setZoom(17);
+        mv.setScrollableAreaLimit(scrollLimit);
+        mv.setMinZoomLevel(16);
+        mv.setMaxZoomLevel(21);
+        //mv.setClusteringEnabled(true, null, 18);
 
-       // mv.getUserLocationOverlay().setDirectionArrowBitmap();
-        PointOfInterest pointOfInterest = new PointOfInterest();
-        poiMarkers = pointOfInterest.getPOI(MainActivity.this, mv);
-
+        // We create an event listener so that we can perform actions each time the user scrolls,
+        // zooms, or rotates the map.
         mv.addListener(new DelayedMapListener(new MapListener() {
             @Override
             public void onScroll(ScrollEvent event) {
-
+                // Nothing needs to be done when to user scrolls.
             }
 
             @Override
             public void onZoom(ZoomEvent event) {
-                //System.out.println(mv.getZoomLevel());
-                mv.closeCurrentTooltip();
-                //if(mv.getOverlays().contains(poiMarkers.get(0))) mv.getOverlays().remove(poiMarkers.get(0));
-                //if(mv.getOverlays().contains(poiMarkers.get(1))) mv.getOverlays().remove(poiMarkers.get(1));
-                if(poiShow) mv.clear();
+                // This listener is important only when POI is selected. The reason being is that at
+                // certain zoom levels different POI are displayed. Therefore, we only ever do anything
+                // in this method when poiShow == true.
+                if (poiShow) {
+                    // We close the current infoWindow and clear the map of all markers.
+                    mv.closeCurrentTooltip();
+                    mv.clear();
 
-                if (mv.getZoomLevel() >= 18 && poiShow) {
-                    mv.addMarkers(poiMarkers.get(1));
-                }
-                if (mv.getZoomLevel() >= 16 && poiShow) {
-                    mv.addMarkers(poiMarkers.get(0));
+                    // We then redraw all the markers depending on the zoom level. This is definitly
+                    // not the best way of doing this.
+                    if (mv.getZoomLevel() >= 18 && poiShow) {
+                        mv.addMarkers(poiMarkers.get(1));
+                    }
+                    if (mv.getZoomLevel() >= 16 && poiShow) {
+                        mv.addMarkers(poiMarkers.get(0));
+                    }
                 }
             }
 
             @Override
             public void onRotate(RotateEvent event) {
-
+                // We do nothing when the map is rotated.
             }
         }));
 
-        //myLocationOverlay = new UserLocationOverlay(new GpsLocationProvider(this), mv);
-        //myLocationOverlay.enableMyLocation();
-       // myLocationOverlay.setDrawAccuracyEnabled(true);
+        // Following the map event listener above, we create an event overlay that can be though of
+        // as a transparent overlay that sits atop the mapView and calls the methods below when the
+        // user single/long taps the map. Its important to note that the ILatLng pressLatLon allows
+        // us to get the location where the user tapped. for instance, pressLatLon.getLatitude, will
+        // give us the latitude where the user pressed.
+        MapEventsReceiver mReceive = new MapEventsReceiver() {
+            @Override
+            public boolean singleTapUpHelper(ILatLng pressLatLon) {
+                // we close the infoWindow if the user single taps.
+                mv.closeCurrentTooltip();
+                return true;
+            }
 
-        //mv.getOverlays().add(myLocationOverlay);
+            @Override
+            public boolean longPressHelper(ILatLng pressLatLon) {
+                // Originally, we had code here that allowed the user to long press to add a marker
+                // and get relevant information. eventually this code will be added again.
+                return true;
+            }
+        };
 
-        BoundingBox scrollLimit = new BoundingBox(29.731896194504913, -95.31928449869156, 29.709354854765827, -95.35668790340424);
-        mv.setScrollableAreaLimit(scrollLimit);
-        mv.setMinZoomLevel(16);
+        // Now we need to actually add the overlay to the mapView overlay list so that it can be used.
+        MapEventsOverlay gestureOverlay = new MapEventsOverlay(this, mReceive);
+        mv.getOverlays().add(gestureOverlay);
 
+        // The last thing we do setting up the main mapView is that we go ahead and display the
+        // "Floor 1" level.
+        //System.out.println();
+        changeFloorLevel(getApplicationContext(), mv, 0);
+
+        // Once the main map is setup, we go ahead and assign tileLayers for all the bus routes
         MapboxTileLayer campusLoopOverlay = new MapboxTileLayer("cammace.n2jn0loh");
         MapTileLayerBase test = new MapTileLayerBasic(getApplicationContext(), campusLoopOverlay, mv);
         campusLoopTiles = new TilesOverlay(test);
@@ -490,72 +547,35 @@ public class MainActivity extends AppCompatActivity {
         eastwoodErpLineTiles.setDrawLoadingTile(false);
         eastwoodErpLineTiles.setLoadingBackgroundColor(Color.TRANSPARENT);
 
-        //PathEffect pathEffect = new PathDashPathEffect(makePathDash(), 12, 10, PathDashPathEffect.Style.MORPH);
-
-/*
-        PathOverlay pathOverlay = new PathOverlay();
-        pathOverlay.addPoint(29.7222194,-95.3431569);
-        pathOverlay.addPoint(29.729268922766913, -95.34362554550171);
-        pathOverlay.setOptimizePath(false);
-
-        pathOverlay.getPaint().setColor(Color.BLACK);
-        pathOverlay.getPaint().setStrokeCap(Paint.Cap.ROUND);
-        //pathOverlay.getPaint().setStyle(Paint.Style.FILL_AND_STROKE);
-        //pathOverlay.getPaint().setPathEffect(pathEffect);
-        pathOverlay.getPaint().setStrokeWidth(10);
-
-
-        mv.getOverlays().add(pathOverlay);
-        //mv.invalidate();
-*/
-
         // Uncomment line below to enable map rotation
         // Disabled because text on map doesn't rotate
         //mv.setMapRotationEnabled(true);
 
-
-
-/*
-mv.setOnTouchListener(new View.OnTouchListener(){
-
-    @Override
-public boolean onTouch(View v, MotionEvent e){
-        System.out.println(mv.getZoomLevel());
-        return true;
+        // We'd uncomment this code below and use it to perform an action every time the user touches
+        // the map. However, for now we have no use for it and is only included in this code for
+        // testing purposes.
+        //mv.setOnTouchListener(new View.OnTouchListener(){
+        //
+        //    @Override
+        //public boolean onTouch(View v, MotionEvent e){
+        //        System.out.println(mv.getZoomLevel());
+        //        return true;
+        //    }
+        //});
     }
-});
-*/
-
-                MapEventsReceiver mReceive = new MapEventsReceiver() {
-            @Override
-            public boolean singleTapUpHelper(ILatLng pressLatLon) {
-                // Convert pressed latitude and longitude to string for URI
-                //String latitude = Double.toString(pressLatLon.getLatitude());
-                //String longitude = Double.toString(pressLatLon.getLongitude());
-                //mv.clear(); // Clears the map when press occurs
-                mv.closeCurrentTooltip();
-
-
-                return true;
-            }
-
-            @Override
-            public boolean longPressHelper(ILatLng pressLatLon) {
-                return true;
-            }
-        };
-
-        MapEventsOverlay gestureOverlay = new MapEventsOverlay(this, mReceive);
-        mv.getOverlays().add(gestureOverlay);
-
-
-    }
-
 
     private void handleIntent(Intent intent){
         // Get the intent, verify the action and get the query
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
+
+            // if POI or a bus route are currently displayed on map, disable.
+            if(poiShow) poiShow = false;
+            if(busRouteShow) stopBusRoute(currentBusRouteShowing);
+
+            // This is called so that the currently selected navigation draw item is no longer selected
+            if(previousDrawerMenuItem != null) previousDrawerMenuItem.setChecked(false);
+
 
             SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                     SearchSuggestion.AUTHORITY, SearchSuggestion.MODE);
@@ -575,10 +595,8 @@ public boolean onTouch(View v, MotionEvent e){
         if(mapview == null) mapview = mv;
         if(context == null) context = this;
 
-        System.out.println(mapview);
-        System.out.println(mapview.getUserLocationOverlay().getMyLocation());
         Graphhopper graphhopper = new Graphhopper();
-        graphhopper.executeRoute(context, mapview, desLat, desLon, mapview.getUserLocationOverlay().getMyLocation());
+        graphhopper.executeRoute(context, desLat, desLon, mapview.getUserLocationOverlay().getMyLocation());
 
         //getFragmentManager().beginTransaction().add(R.id.route_detail_container, blah).commit();
 
@@ -635,36 +653,25 @@ public boolean onTouch(View v, MotionEvent e){
         return result;
     }
 
-    public int getCurrentFloor(){
-        return currentFloor;
-    }
-
-    public void setCurrentFloor(int currentFloor){
-        this.currentFloor = currentFloor;
-    }
-
-    public void changeFloorLevel(Context context, MapView mv, int level){
-
-        if(level == currentFloor) return;
+    public void changeFloorLevel(Context context, MapView mv, int level) {
+        // This method is used to change the mapView floor level. Only one level can be shown to the user.
         String mapKey;
-        Overlay temp = floorLevel;
 
-        //System.out.println(mv.getOverlays());
-        //if(mv.getOverlays().contains(floorLevel))
-        //System.out.println(mv.getOverlays().get(mv.getOverlays().indexOf(floorLevel)));
+        // This checks the mapView overlay list and is only executed if a floorlevel overlay is
+        // found in the list.
+        if (mv.getOverlays().contains(floorLevel)) {
+            // First we check and see if the floor level we are changing to is already being shown.
+            // If so nothing needs to be done, therefore we return.
+            if (level == currentFloor) return;
 
-        if(mv.getOverlays().contains(floorLevel)){
-            temp = mv.getOverlays().get(mv.getOverlays().indexOf(floorLevel));
+            // We need to remove the floorlevel currently within the overlay list before adding the
+            // new floorlevel to the mapView.
             mv.getOverlays().remove(floorLevel);
         }
 
-       // if(mv.getOverlays().contains(level_1)) mv.getOverlays().remove(level_1);
-       // if(mv.getOverlays().contains(level_2)) mv.getOverlays().remove(level_2);
-
-        //if(mv.getOverlays().get(mv.getOverlays().indexOf(floorLevel)) == )
-
-        //if(level == 0) mapKey = getString(R.string.floor_0_key);
-        switch(level){
+        // this switch associates the method level number (given when we call this method) with the
+        // floor mapKey.
+        switch (level) {
             default:
                 mapKey = "cammace.nc76p7k8"; //getString(R.string.floor_0_key);
                 break;
@@ -676,33 +683,32 @@ public boolean onTouch(View v, MotionEvent e){
                 break;
         }
 
-            MapboxTileLayer mapboxTileLayer = new MapboxTileLayer(mapKey);
-            MapTileLayerBase mapTileLayerBase = new MapTileLayerBasic(context, mapboxTileLayer, mv);
-            floorLevel = new TilesOverlay(mapTileLayerBase);
-            floorLevel.setDrawLoadingTile(false);
-            floorLevel.setLoadingBackgroundColor(Color.TRANSPARENT);
+        // We now create the floor overlay.
+        MapboxTileLayer mapboxTileLayer = new MapboxTileLayer(mapKey);
+        MapTileLayerBase mapTileLayerBase = new MapTileLayerBasic(context, mapboxTileLayer, mv);
+        floorLevel = new TilesOverlay(mapTileLayerBase);
+        floorLevel.setDrawLoadingTile(false);
+        floorLevel.setLoadingBackgroundColor(Color.TRANSPARENT);
 
-        System.out.println("temp=    " + temp);
-        System.out.println("floorlevel=    " + floorLevel);
+        // add the floorLevel to the mapView overlay list and display it to the user. Call
+        // invalidate so that the mapView overlays are refreshed and the new floorLevel is
+        // instantly shown
+        mv.getOverlays().add(0, floorLevel);
+        mv.invalidate();
 
-        if(temp == floorLevel) System.out.println("400000000");
-            mv.getOverlays().add(0, floorLevel);
-            mv.invalidate();
-
-            currentFloor = level;
-
-        }
-
-
-
-
-
-
+        // Lastly, we need to update the currentFloor level int so we easily can know which level is
+        // being shown to the user currently.
+        currentFloor = level;
+    }// end changeFloorLevel
 
     public void playBusRoute(final int busRoute){
         // This method creates a handler that moves the bus markers every given second. This makes
         // the markers move smoother on the map instead of jumping around. After x amount of time,
         // the actual GPS location of the buses are updated.
+
+        // Go ahead and clear the map
+        mv.clearMarkerFocus();
+        mv.clear();
 
         // First we check to ensure no other transit overlay is present. If there is one we remove it
         if(mv.getOverlays().contains(campusLoopTiles)) stopBusRoute(1);
@@ -712,6 +718,13 @@ public boolean onTouch(View v, MotionEvent e){
 
         // Set firstBusCheck to true so we know its the first time running updateCurrentBusLocation
         firstBusCheck = true;
+
+        // We change this int so that globally we can tell which bus route is currently being shown
+        // on the mapView
+        currentBusRouteShowing = busRoute;
+
+        // We also need to globally notify everything interested that we are now showing a bus route
+        busRouteShow = true;
 
         // Clear all list so no leftover data interferes with the new bus routes
         start.clear();
@@ -739,15 +752,13 @@ public boolean onTouch(View v, MotionEvent e){
                 if (busPlot.isEmpty()) Log.wtf("busRoute", "busMarkerList is empty");
                 else {
                     // Clear all the markers on the map
-                    // TODO fix this so it only removes the bus markers instead of all markers.
+                    mv.clearMarkerFocus();
                     mv.clear();
 
                     // Draw the bus markers
                     for (int i = 0; i < buses.size(); i++) {
                         List<LatLng> tempBus = buses.get(i);
                         Marker busMarker = new Marker(null, null, tempBus.get(0));
-
-
 
                         switch(busRoute){
                             case 1:
