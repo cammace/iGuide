@@ -15,6 +15,12 @@
             android:icon="@drawable/ic_local_parking_black_24dp"
             android:title="@string/parking" />
 
+        <item
+            android:id="@+id/campus_issues"
+            android:checked="false"
+            android:icon="@drawable/ic_warning_black_24dp"
+            android:title="@string/campusIssues" />
+
     </group>
 
     <group

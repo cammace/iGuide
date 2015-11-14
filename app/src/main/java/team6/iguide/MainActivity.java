@@ -86,6 +86,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import team6.iguide.BusLocation.BusLocation;
+import team6.iguide.IssueDataModel.IssueDataModel;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -111,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
     boolean poiShow = false;
     boolean busRouteShow = false;
     int currentBusRouteShowing;
+    boolean campusIssueMarkersVisable = false;
 
     // Tiles
     private TilesOverlay campusLoopTiles;
@@ -202,7 +204,9 @@ public class MainActivity extends AppCompatActivity {
                 else menuItem.setChecked(true);
 
                 poiShow = false;
+                campusIssueMarkersVisable = false;
                 if(busRouteShow) stopBusRoute(currentBusRouteShowing);
+
 
                 //Closing drawer on item click
                 drawerLayout.closeDrawers();
@@ -211,6 +215,18 @@ public class MainActivity extends AppCompatActivity {
                 switch (menuItem.getItemId()) {
                     case R.id.parking:
                         Toast.makeText(getApplicationContext(), "Parking feature coming soon", Toast.LENGTH_SHORT).show();
+                        break;
+                    case R.id.campus_issues:
+                        mv.clearMarkerFocus();
+                        mv.clear();
+                        mv.invalidate();
+                        if(menuItem.isChecked() && !campusIssueMarkersVisable) displayCampusIssues();
+                        else{
+                            campusIssueMarkersVisable = false;
+                            mv.clearMarkerFocus();
+                            mv.clear();
+                        }
+                        mv.invalidate();
                         break;
                     case R.id.campus_loop:
                         // If bus route isn't showing on mapView then display it, else remove it.
@@ -230,6 +246,8 @@ public class MainActivity extends AppCompatActivity {
                         //else stopBusRoute(4);
                         break;
                     case R.id.poi:
+                        mv.clearMarkerFocus();
+                        mv.clear();
                         if (menuItem.isChecked() && !poiShow) {
                             poiShow = true;
                             if (mv.getZoomLevel() >= 18) {
@@ -315,12 +333,13 @@ public class MainActivity extends AppCompatActivity {
                 // When the FAB is clicked, we first check that we can find the user location and if
                 // they are within the map scrolling limit. If so we move the mapView to the user
                 // location. Otherwise, we display a message
+
                 if (mv.getUserLocation() != null) {
                     if (scrollLimit.contains(mv.getUserLocation())) mv.goToUserLocation(true);
                     else
                         Toast.makeText(getApplicationContext(), getString(R.string.userLocationNotWithinBB), Toast.LENGTH_SHORT).show();
-                }
-                else Toast.makeText(getApplicationContext(), "Your current location cannot be found", Toast.LENGTH_SHORT).show();
+                } else
+                    Toast.makeText(getApplicationContext(), "Your current location cannot be found", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -398,6 +417,82 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void displayCampusIssues(){
+
+        Toast.makeText(getApplicationContext(), "Long press to add an issue at that location", Toast.LENGTH_SHORT).show();
+        campusIssueMarkersVisable = true;
+
+        // Create volley queue
+        mRequestQueue = Volley.newRequestQueue(getApplicationContext());
+
+        String URI = "http://iguide.heliohost.org/get_all_markers.php";
+
+        // we begin by fetching the json data using volley
+        JsonObjectRequest req = new JsonObjectRequest(URI, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+
+                // Parse the JSON response
+                Gson gson = new Gson();
+                String issueData = response.toString();
+                IssueDataModel issueDataModel = gson.fromJson(issueData, IssueDataModel.class);
+
+                //System.out.println(issueDataModel.getMarkers().get(0).getPid());
+                for(int i=0; i<issueDataModel.getMarkers().size(); i++){
+
+                    Marker issue = new Marker(issueDataModel.getMarkers().get(i).getTitle(),
+                            issueDataModel.getMarkers().get(i).getDescription() ,
+                            new LatLng(issueDataModel.getMarkers().get(i).getMarkerLat(), issueDataModel.getMarkers().get(i).getMarkerLon()));
+
+                    issue.setToolTip(new CampusIssueInfoWindow(getApplicationContext(),MainActivity.this, mv, issueDataModel.getMarkers(), i));
+
+                    switch (issueDataModel.getMarkers().get(i).getType()) {
+                        case "Sidewalk light out":
+                            issue.setMarker(getResources().getDrawable(R.drawable.light));
+                            break;
+                        case "IT Department":
+                            issue.setMarker(getResources().getDrawable(R.drawable.computer));
+                            break;
+                        case "Room temperature":
+                            issue.setMarker(getResources().getDrawable(R.drawable.temperature));
+                            break;
+                        default:
+                            issue.setMarker(getResources().getDrawable(R.drawable.other));
+                            break;
+                    }
+                    mv.addMarker(issue);
+
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            // This is in case an error occurs when fetching the json.
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("issueData", "Error occured when trying to get markers from database: " + error);
+            }
+        });
+        mRequestQueue.add(req);
+
+        // This allows volley to retry request if for some reason it times out the first time
+        // More info can be found in this question:
+        // http://stackoverflow.com/questions/17094718/android-volley-timeout
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                5000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+
+
+
+
+
+
+
+
+
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // This method handles actions when a toolbar item is clicked on.
@@ -462,7 +557,7 @@ public class MainActivity extends AppCompatActivity {
         mv.addListener(new DelayedMapListener(new MapListener() {
             @Override
             public void onScroll(ScrollEvent event) {
-                // Nothing needs to be done when to user scrolls.
+                // Nothing needs to be done when the user scrolls.
             }
 
             @Override
@@ -507,8 +602,18 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean longPressHelper(ILatLng pressLatLon) {
-                // Originally, we had code here that allowed the user to long press to add a marker
-                // and get relevant information. eventually this code will be added again.
+
+                if(campusIssueMarkersVisable) {
+
+
+                    Bundle bundle = new Bundle();
+                    bundle.putDouble("LOCATIONLAT", pressLatLon.getLatitude());
+                    bundle.putDouble("LOCATIONLON", pressLatLon.getLongitude());
+
+                    Intent intent = new Intent(MainActivity.this, CampusIssueReportActivity.class);
+                    intent.putExtra("BUNDLE", bundle);
+                    startActivity(intent);
+                }
                 return true;
             }
         };
@@ -572,6 +677,7 @@ public class MainActivity extends AppCompatActivity {
             // if POI or a bus route are currently displayed on map, disable.
             if(poiShow) poiShow = false;
             if(busRouteShow) stopBusRoute(currentBusRouteShowing);
+            if(campusIssueMarkersVisable) campusIssueMarkersVisable = false;
 
             // This is called so that the currently selected navigation draw item is no longer selected
             if(previousDrawerMenuItem != null) previousDrawerMenuItem.setChecked(false);
@@ -605,6 +711,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        if(campusIssueMarkersVisable){
+            mv.clear();
+            displayCampusIssues();
+        }
+
         mv.setUserLocationEnabled(true);
         mv.getUserLocationOverlay().setDirectionArrowBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.location_arrow));
         mv.getUserLocationOverlay().setPersonBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.location_dot));

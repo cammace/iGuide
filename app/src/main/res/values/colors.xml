@@ -5,10 +5,13 @@
     <color name="PrimaryDarkColor">#1976D2</color>
     <color name="RoutePrimaryColor">#46C0FC</color>
     <color name="RouteDarkColor">#2895E1</color>
-    <color name="BeginDirectionFABColor">#17C749</color>
+    <color name="BeginDirectionFABColor">#4CAF50</color>
 
     <color name="map_amenity_icon">#666666</color>
     <color name="primary_material_light">#2196f3</color>
+    <color name="foreground_material_light">#ffffff</color>
+    <color name="black">#ffffff</color>
+    <color name="primary_text_material_dark">#ffffff</color>
 </resources>
 
 

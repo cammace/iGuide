@@ -27,11 +27,10 @@
         Copyright &#169; 2011 The Android Open Source Project\n
         \n
         <b>CircularImageView</b>\n
-        Copyright &#169; 2015 Mikhael LOPEZ \n
+        Copyright &#169; 2015 Mikhael Lopez
     </string>
 
     <string name="license">
-        \n
         <b>iGuide</b>\n
         Copyright &#169; 2015 Cameron Mace \n
         \n
@@ -45,6 +44,6 @@
          MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
          GNU General Public License for more details.\n
         \n
-        see http://www.gnu.org/licenses for the full GNU General Public License.\n</string>
+        see http://www.gnu.org/licenses for the full GNU General Public License.</string>
 
 </resources>
