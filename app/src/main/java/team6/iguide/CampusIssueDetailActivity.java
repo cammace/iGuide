@@ -34,6 +34,7 @@ import com.android.volley.toolbox.Volley;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -142,7 +143,7 @@ public class CampusIssueDetailActivity extends AppCompatActivity {
         if(type != null) detailItems.add(new DetailItemRecycler("Category", type));
         if(!description.isEmpty()) detailItems.add(new DetailItemRecycler("Description", description));
         if(created != null) detailItems.add(new DetailItemRecycler("First created", formatTime(created)));
-        if(!updated.equals("0000-00-00 00:00:00")) detailItems.add(new DetailItemRecycler("Last updated", updated));
+        if(!updated.equals("0000-00-00 00:00:00")) detailItems.add(new DetailItemRecycler("Last updated", formatTime(updated)));
 
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(CampusIssueDetailActivity.this, DividerItemDecoration.VERTICAL_LIST));
@@ -193,13 +194,16 @@ public class CampusIssueDetailActivity extends AppCompatActivity {
     public static String formatTime(String datestr){
         String inputPattern = "yyyy-MM-dd HH:mm:ss";
         String outputPattern = "MMM dd, yyyy, h:mm a";
-        SimpleDateFormat inputFormat = new SimpleDateFormat(inputPattern);
-        SimpleDateFormat outputFormat = new SimpleDateFormat(outputPattern);
+        SimpleDateFormat inputFormat = new SimpleDateFormat(inputPattern, Locale.US);
+        SimpleDateFormat outputFormat = new SimpleDateFormat(outputPattern, Locale.US);
 
         Date date = null;
         String str = null;
         try {
             date = inputFormat.parse(datestr);
+
+            // Add 2 hours (7200000ms) to time since server timezone is cali time
+            date.setTime(date.getTime() + 7200000);
             str = outputFormat.format(date);
         } catch (ParseException e) {
             e.printStackTrace();
@@ -209,7 +213,3 @@ public class CampusIssueDetailActivity extends AppCompatActivity {
 
 }
 
-/*
-Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
- */

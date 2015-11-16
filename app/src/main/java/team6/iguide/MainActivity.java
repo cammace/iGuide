@@ -23,15 +23,14 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.SearchRecentSuggestions;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -43,10 +42,11 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
+import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.ExpandableListView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -67,12 +67,9 @@ import com.mapbox.mapboxsdk.events.ScrollEvent;
 import com.mapbox.mapboxsdk.events.ZoomEvent;
 import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.overlay.Icon;
-import com.mapbox.mapboxsdk.overlay.ItemizedIconOverlay;
 import com.mapbox.mapboxsdk.overlay.MapEventsOverlay;
 import com.mapbox.mapboxsdk.overlay.MapEventsReceiver;
 import com.mapbox.mapboxsdk.overlay.Marker;
-import com.mapbox.mapboxsdk.overlay.Overlay;
 import com.mapbox.mapboxsdk.overlay.TilesOverlay;
 import com.mapbox.mapboxsdk.tileprovider.MapTileLayerBase;
 import com.mapbox.mapboxsdk.tileprovider.MapTileLayerBasic;
@@ -83,6 +80,7 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import team6.iguide.BusLocation.BusLocation;
@@ -113,6 +111,24 @@ public class MainActivity extends AppCompatActivity {
     boolean busRouteShow = false;
     int currentBusRouteShowing;
     boolean campusIssueMarkersVisable = false;
+    String currentMapViewOverlay = "";
+    String currentChildMenuItem = "";
+
+
+
+
+
+    private DrawerLayout mDrawerLayout;
+    ExpandableListAdapter mMenuAdapter;
+    AnimatedExpandableListView  expandableList;
+    List<ExpandedMenuModel> listDataHeader;
+    HashMap<ExpandedMenuModel, List<String>> listDataChild;
+
+
+
+
+
+
 
     // Tiles
     private TilesOverlay campusLoopTiles;
@@ -184,15 +200,288 @@ public class MainActivity extends AppCompatActivity {
         poiMarkers = pointOfInterest.getPOI(MainActivity.this, mv);
     }
 
+    public String getCurrentMapViewOverlay(){
+        return currentMapViewOverlay;
+    }
+
     private void navigationDrawer(){
 
         //Initializing NavigationView
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        /*ExpandableListView drawerList = (ExpandableListView) findViewById(R.id.left_drawer2);
 
 
-        //drawerList.setAdapter(new SimpleExpandableListAdapter(this, groupData, android.R.layout.simple_list_item_1, new String[] {"blahblah"},));
-*/
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
+        expandableList = (AnimatedExpandableListView) findViewById(R.id.navigationmenu);
+
+
+        prepareListData();
+        mMenuAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild, expandableList);
+
+        // setting list adapter
+        expandableList.setAdapter(mMenuAdapter);
+    }
+    private void prepareListData() {
+        listDataHeader = new ArrayList<ExpandedMenuModel>();
+        listDataChild = new HashMap<ExpandedMenuModel, List<String>>();
+
+        ExpandedMenuModel item1 = new ExpandedMenuModel();
+        item1.setIconName(getString(R.string.poi));
+        item1.setIconImg(R.drawable.ic_place_black_24dp);
+        // Adding data header
+        listDataHeader.add(item1);
+
+        ExpandedMenuModel item2 = new ExpandedMenuModel();
+        item2.setIconName(getString(R.string.parking));
+        item2.setIconImg(R.drawable.ic_local_parking_black_24dp);
+        listDataHeader.add(item2);
+
+        ExpandedMenuModel item3 = new ExpandedMenuModel();
+        item3.setIconName(getString(R.string.transit));
+        item3.setIconImg(R.drawable.ic_directions_bus_black_24dp);
+        listDataHeader.add(item3);
+
+        ExpandedMenuModel item4 = new ExpandedMenuModel();
+        item4.setIconName(getString(R.string.campusIssues));
+        item4.setIconImg(R.drawable.ic_warning_black_24dp);
+        listDataHeader.add(item4);
+
+        ExpandedMenuModel item5 = new ExpandedMenuModel();
+        item5.setIconName(getString(R.string.help));
+        item5.setIconImg(R.drawable.ic_help_black_24dp);
+        listDataHeader.add(item5);
+
+        ExpandedMenuModel item6 = new ExpandedMenuModel();
+        item6.setIconName(getString(R.string.settings));
+        item6.setIconImg(R.drawable.ic_settings_black_24dp);
+        listDataHeader.add(item6);
+
+
+        // Adding child data
+        List<String> heading1= new ArrayList<String>();
+        heading1.add("Economy Lots");
+        heading1.add("Faculty Lots");
+        heading1.add("Garage Parking");
+        heading1.add("Student Lots");
+        heading1.add("Visitor Parking");
+
+        List<String> heading2= new ArrayList<String>();
+        heading2.add(getString(R.string.campus_loop));
+        heading2.add(getString(R.string.outer_loop));
+        heading2.add(getString(R.string.erp_express));
+        heading2.add(getString(R.string.eastwood_erp_line));
+
+        listDataChild.put(listDataHeader.get(1), heading1);// Header, Child data
+        listDataChild.put(listDataHeader.get(2), heading2);
+
+
+
+        expandableList.setOnGroupClickListener(new team6.iguide.AnimatedExpandableListView.OnGroupClickListener() {
+
+            @Override
+            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
+
+                v.playSoundEffect(SoundEffectConstants.CLICK);
+                currentChildMenuItem = "";
+
+                //System.out.println(parent.getExpandableListAdapter().getGroup(groupPosition).toString());
+
+                switch (listDataHeader.get(groupPosition).getIconName()) {
+                    case "Places of Interest":
+                        drawerLayout.closeDrawers();
+                        mv.clearMarkerFocus();
+                        mv.clear();
+                        campusIssueMarkersVisable = false;
+                        if(busRouteShow) stopBusRoute(currentBusRouteShowing);
+                        if (!poiShow) {
+                            poiShow = true;
+                            currentMapViewOverlay = "Places of Interest";
+                            if (mv.getZoomLevel() >= 18) {
+                                mv.addMarkers(poiMarkers.get(1));
+                            }
+                            if (mv.getZoomLevel() >= 16) {
+                                mv.addMarkers(poiMarkers.get(0));
+                            }
+                        } else {
+                            poiShow = false;
+                            currentMapViewOverlay = " ";
+                            mv.removeMarkers(poiMarkers.get(1));
+                            mv.removeMarkers(poiMarkers.get(0));
+                            mv.clearMarkerFocus();
+                        }
+                        mv.invalidate();
+                        break;
+
+                    case "Parking":
+                        if (expandableList.isGroupExpanded(groupPosition)) {
+                            expandableList.collapseGroupWithAnimation(groupPosition);
+                        } else {
+                            expandableList.expandGroupWithAnimation(groupPosition);
+                        }
+                        break;
+
+                    case "Transit":
+                        if (expandableList.isGroupExpanded(groupPosition)) {
+                            expandableList.collapseGroupWithAnimation(groupPosition);
+                        } else {
+                            expandableList.expandGroupWithAnimation(groupPosition);
+                        }
+                        break;
+
+                    case "Campus Issues":
+                        drawerLayout.closeDrawers();
+                        mv.clearMarkerFocus();
+                        mv.clear();
+                        mv.invalidate();
+                        if(busRouteShow) stopBusRoute(currentBusRouteShowing);
+                        poiShow = false;
+                        if (!campusIssueMarkersVisable) {
+                            currentMapViewOverlay = "Campus Issues";
+                            displayCampusIssues();
+                        } else {
+                            currentMapViewOverlay = " ";
+                            campusIssueMarkersVisable = false;
+                            mv.clearMarkerFocus();
+                            mv.clear();
+                        }
+                        mv.invalidate();
+                        break;
+
+                    case "Help & Feedback":
+                        drawerLayout.closeDrawers();
+                        DialogFragment newFragmentHelp = new Help();
+                        newFragmentHelp.show(getSupportFragmentManager(), "Help & Feedback");
+                        break;
+
+                    case "Settings":
+                        drawerLayout.closeDrawers();
+                        Intent intent = new Intent(MainActivity.this, Settings.class);
+                        startActivity(intent);
+                        break;
+
+                    default:
+                        Toast.makeText(getApplicationContext(), "Somethings Wrong", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+                // Notify the adapter so it can redraw all items and change color of item selected
+                mMenuAdapter.notifyDataSetChanged();
+                return true;
+            }
+        });
+
+        expandableList.setOnChildClickListener(new team6.iguide.AnimatedExpandableListView.OnChildClickListener() {
+
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+
+                if(busRouteShow) stopBusRoute(currentBusRouteShowing);
+                mv.clearMarkerFocus();
+                mv.clear();
+                campusIssueMarkersVisable = false;
+                poiShow = false;
+
+                switch (parent.getExpandableListAdapter().getChild(groupPosition, childPosition).toString()) {
+
+                    case "Campus Loop":
+                        drawerLayout.closeDrawers();
+                        if(!currentChildMenuItem.equals("Campus Loop")){
+                            currentChildMenuItem = "Campus Loop";
+                            currentMapViewOverlay = "Transit";
+                            playBusRoute(1);
+                        }
+                        else{
+                            currentMapViewOverlay = " ";
+                            currentChildMenuItem = " ";
+                        }
+                        break;
+                    case "Outer Loop":
+                        drawerLayout.closeDrawers();
+                        if(!currentChildMenuItem.equals("Outer Loop")){
+                            currentChildMenuItem = "Outer Loop";
+                            currentMapViewOverlay = "Transit";
+                            playBusRoute(3);
+                        }
+                        else {
+                            currentMapViewOverlay = " ";
+                            currentChildMenuItem = " ";
+                        }
+                        break;
+                    case "ERP Express":
+                        drawerLayout.closeDrawers();
+                        if(!currentChildMenuItem.equals("ERP Express")){
+                            currentChildMenuItem = "ERP Express";
+                            currentMapViewOverlay = "Transit";
+                            playBusRoute(4);
+                        }
+                        else {
+                            currentMapViewOverlay = " ";
+                            currentChildMenuItem = " ";
+                        }
+                        break;
+                    case "Eastwood ERP Line":
+                        drawerLayout.closeDrawers();
+                        if(!currentChildMenuItem.equals("Eastwood ERP Line")){
+                            currentChildMenuItem = "Eastwood ERP Line";
+                            currentMapViewOverlay = "Transit";
+                            playBusRoute(2);
+                        }
+                        else {
+                            currentMapViewOverlay = " ";
+                            currentChildMenuItem = " ";
+                        }
+                        break;
+
+                    case "Economy Lots":
+                        drawerLayout.closeDrawers();
+                        currentMapViewOverlay = "Parking";
+                        Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT).show();
+                        break;
+                    case "Faculty Lots":
+                        drawerLayout.closeDrawers();
+                        currentMapViewOverlay = "Parking";
+                        Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT).show();
+                        break;
+                    case "Garage Parking":
+                        drawerLayout.closeDrawers();
+                        currentMapViewOverlay = "Parking";
+                        Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT).show();
+                        break;
+                    case "Student Lots":
+                        drawerLayout.closeDrawers();
+                        currentMapViewOverlay = "Parking";
+                        Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT).show();
+                        break;
+                    case "Visitor Parking":
+                        drawerLayout.closeDrawers();
+                        currentMapViewOverlay = "Parking";
+                        Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT).show();
+                        break;
+
+                }
+
+                // Notify the adapter so it can redraw all items and change color of item selected
+                mMenuAdapter.notifyDataSetChanged();
+
+                return true;
+            }
+
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
         //Setting Navigation View Item Selected Listener to handle the item click of the navigation menu
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
 
@@ -205,7 +494,7 @@ public class MainActivity extends AppCompatActivity {
 
                 poiShow = false;
                 campusIssueMarkersVisable = false;
-                if(busRouteShow) stopBusRoute(currentBusRouteShowing);
+                if (busRouteShow) stopBusRoute(currentBusRouteShowing);
 
 
                 //Closing drawer on item click
@@ -220,8 +509,9 @@ public class MainActivity extends AppCompatActivity {
                         mv.clearMarkerFocus();
                         mv.clear();
                         mv.invalidate();
-                        if(menuItem.isChecked() && !campusIssueMarkersVisable) displayCampusIssues();
-                        else{
+                        if (menuItem.isChecked() && !campusIssueMarkersVisable)
+                            displayCampusIssues();
+                        else {
                             campusIssueMarkersVisable = false;
                             mv.clearMarkerFocus();
                             mv.clear();
@@ -284,7 +574,7 @@ public class MainActivity extends AppCompatActivity {
                 previousDrawerMenuItem = menuItem;
                 return true;
             }
-        });
+        });*/
         // Initializing Drawer Layout and ActionBarToggle
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.openDrawer, R.string.closeDrawer) {
@@ -354,9 +644,12 @@ public class MainActivity extends AppCompatActivity {
         // Change boolean to false so globally we know we are no long showing a bus route
         busRouteShow = false;
 
+        // Change the current bus showing int to 0 (null)
+        currentBusRouteShowing = 0;
+
         // Since we are removing whatever current route is showing, we also want to uncheck the item
         // in the navigation drawer
-        previousDrawerMenuItem.setChecked(false);
+//        previousDrawerMenuItem.setChecked(false);
 
         // Finally, remove bus route tile overlay from mapView
         switch(busRoute){
@@ -678,6 +971,11 @@ public class MainActivity extends AppCompatActivity {
             if(poiShow) poiShow = false;
             if(busRouteShow) stopBusRoute(currentBusRouteShowing);
             if(campusIssueMarkersVisable) campusIssueMarkersVisable = false;
+            currentChildMenuItem = "";
+            currentMapViewOverlay = "";
+
+            // Notify the drawer adapter so it can redraw all items
+            mMenuAdapter.notifyDataSetChanged();
 
             // This is called so that the currently selected navigation draw item is no longer selected
             if(previousDrawerMenuItem != null) previousDrawerMenuItem.setChecked(false);
