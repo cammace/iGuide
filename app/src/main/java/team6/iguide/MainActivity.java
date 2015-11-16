@@ -321,6 +321,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case "Transit":
+
                         if (expandableList.isGroupExpanded(groupPosition)) {
                             expandableList.collapseGroupWithAnimation(groupPosition);
                         } else {
@@ -387,6 +388,7 @@ public class MainActivity extends AppCompatActivity {
                         if(!currentChildMenuItem.equals("Campus Loop")){
                             currentChildMenuItem = "Campus Loop";
                             currentMapViewOverlay = "Transit";
+
                             playBusRoute(1);
                         }
                         else{
@@ -454,7 +456,7 @@ public class MainActivity extends AppCompatActivity {
                     case "Visitor Parking":
                         drawerLayout.closeDrawers();
                         currentMapViewOverlay = "Parking";
-                        Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT).show();
+                        Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Coming Soon", Snackbar.LENGTH_SHORT).show();
                         break;
 
                 }
@@ -469,112 +471,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-        //Setting Navigation View Item Selected Listener to handle the item click of the navigation menu
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-
-            // This method will trigger on item Click of navigation menu
-            @Override
-            public boolean onNavigationItemSelected(MenuItem menuItem) {
-                //Checking if the item is in checked state or not, if not make it in checked state
-                if (menuItem.isChecked()) menuItem.setChecked(false);
-                else menuItem.setChecked(true);
-
-                poiShow = false;
-                campusIssueMarkersVisable = false;
-                if (busRouteShow) stopBusRoute(currentBusRouteShowing);
-
-
-                //Closing drawer on item click
-                drawerLayout.closeDrawers();
-                Intent intent;
-                //Check to see which item was being clicked and perform appropriate action
-                switch (menuItem.getItemId()) {
-                    case R.id.parking:
-                        Toast.makeText(getApplicationContext(), "Parking feature coming soon", Toast.LENGTH_SHORT).show();
-                        break;
-                    case R.id.campus_issues:
-                        mv.clearMarkerFocus();
-                        mv.clear();
-                        mv.invalidate();
-                        if (menuItem.isChecked() && !campusIssueMarkersVisable)
-                            displayCampusIssues();
-                        else {
-                            campusIssueMarkersVisable = false;
-                            mv.clearMarkerFocus();
-                            mv.clear();
-                        }
-                        mv.invalidate();
-                        break;
-                    case R.id.campus_loop:
-                        // If bus route isn't showing on mapView then display it, else remove it.
-                        if (menuItem.isChecked()) playBusRoute(1);
-                        //else stopBusRoute(1);
-                        break;
-                    case R.id.outer_loop:
-                        if (menuItem.isChecked()) playBusRoute(3);
-                        //else stopBusRoute(3);
-                        break;
-                    case R.id.eastwood_erp_line:
-                        if (menuItem.isChecked()) playBusRoute(2);
-                        //else stopBusRoute(2);
-                        break;
-                    case R.id.erp_express:
-                        if (menuItem.isChecked()) playBusRoute(4);
-                        //else stopBusRoute(4);
-                        break;
-                    case R.id.poi:
-                        mv.clearMarkerFocus();
-                        mv.clear();
-                        if (menuItem.isChecked() && !poiShow) {
-                            poiShow = true;
-                            if (mv.getZoomLevel() >= 18) {
-                                mv.addMarkers(poiMarkers.get(1));
-                            }
-                            if (mv.getZoomLevel() >= 16) {
-                                mv.addMarkers(poiMarkers.get(0));
-                            }
-                        } else {
-                            poiShow = false;
-                            mv.removeMarkers(poiMarkers.get(1));
-                            mv.removeMarkers(poiMarkers.get(0));
-                            mv.clearMarkerFocus();
-                        }
-                        mv.invalidate();
-                        break;
-                    case R.id.settings:
-                        menuItem.setChecked(false);
-                        intent = new Intent(MainActivity.this, Settings.class);
-                        startActivity(intent);
-                        break;
-                    case R.id.help:
-                        menuItem.setChecked(false);
-                        DialogFragment newFragmentHelp = new Help();
-                        newFragmentHelp.show(getSupportFragmentManager(), "Help & Feedback");
-                        break;
-                    default:
-                        Toast.makeText(getApplicationContext(), "Somethings Wrong", Toast.LENGTH_SHORT).show();
-                        break;
-                }
-
-                // Setting drawerMenuItem allows us to see what items currently selected in the
-                // navigation drawer globally
-                previousDrawerMenuItem = menuItem;
-                return true;
-            }
-        });*/
         // Initializing Drawer Layout and ActionBarToggle
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.openDrawer, R.string.closeDrawer) {

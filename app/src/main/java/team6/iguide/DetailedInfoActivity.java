@@ -14,11 +14,15 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -61,9 +65,9 @@ public class DetailedInfoActivity extends AppCompatActivity{
     String formatedHours;
     String image;
     String wikiLink;
-    ArrayList<DetailItem> detailItems;
+    ArrayList<DetailItemRecycler> detailItems;
     String wikiExtract;
-    CustomDetailItemAdapter adapter;
+    RecyclerView.Adapter adapter;
     private RequestQueue mRequestQueue;
     public static final String inputFormat = "HH:mm";
     private Date date;
@@ -85,13 +89,19 @@ public class DetailedInfoActivity extends AppCompatActivity{
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout)findViewById(R.id.toolbar_layout);
+        collapsingToolbar.setStatusBarScrimColor(getResources().getColor(R.color.PrimaryDarkColor));
+
 
         routeFAB();
 
         // Makes status bar color same as PrimaryDarkColor
-        if(Build.VERSION.SDK_INT >= 21)
-        getWindow().setStatusBarColor(getResources().getColor(R.color.PrimaryDarkColor));
+        if(Build.VERSION.SDK_INT >= 21){
+            //getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            //getWindow().setStatusBarColor(getResources().getColor(R.color.PrimaryDarkColor));
+        }
+
 
         // Adds back button to toolbar
         toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
@@ -124,11 +134,13 @@ public class DetailedInfoActivity extends AppCompatActivity{
             currentLon = bundle.getDouble("CURRENTLON");
         }
 
+        ImageView imageView = (ImageView)findViewById(R.id.building_image);
+        imageView.setImageResource(R.drawable.no_image_grey);
         if(image != null) new DownloadImageTask((ImageView) findViewById(R.id.building_image)).execute(image);
+        //else imageView.setImageResource(R.drawable.no_image_grey);
 
 
-        TextView titleView = (TextView) findViewById(R.id.detail_info_title);
-        titleView.setText(title);
+        getSupportActionBar().setTitle(title);
 
         if(hours != null) formatHourString();
 
@@ -139,20 +151,32 @@ public class DetailedInfoActivity extends AppCompatActivity{
     }
 
     private void populateDetailedList() {
-        detailItems = new ArrayList<DetailItem>();
-        if(ref != null) detailItems.add(new DetailItem("Reference", ref));
-        if(hours != null) detailItems.add(new DetailItem("Hours", formatedHours));
-        if(phone != null) detailItems.add(new DetailItem("Phone", phone));
-        if(website != null) detailItems.add(new DetailItem("Website", website));
-        if(address != null) detailItems.add(new DetailItem("Address", address));
-        if(fax != null) detailItems.add(new DetailItem("Fax", fax));
+        detailItems = new ArrayList<>();
+        if(ref != null) detailItems.add(new DetailItemRecycler("Reference", ref));
+        if(hours != null) detailItems.add(new DetailItemRecycler("Hours", formatedHours));
+        if(phone != null) detailItems.add(new DetailItemRecycler("Phone", phone));
+        if(website != null) detailItems.add(new DetailItemRecycler("Website", website));
+        if(address != null) detailItems.add(new DetailItemRecycler("Address", address));
+        if(fax != null) detailItems.add(new DetailItemRecycler("Fax", fax));
 
         // Create the adapter to convert the array to views
-        adapter = new CustomDetailItemAdapter(this, detailItems);
+        adapter = new RecyclerAdapter(this, detailItems);
         // Attach the adapter to a ListView
-        ListView listView = (ListView) findViewById(R.id.details_list);
-        listView.setAdapter(adapter);
+        RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.details_list);
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setAdapter(adapter);
+/*
+        mRecyclerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                System.out.println(v.toString());
+            }
+        });
 
+        //TODO add onClick method
+        /*
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -175,7 +199,7 @@ public class DetailedInfoActivity extends AppCompatActivity{
                         break;
                 }
             }
-        });
+        });*/
     }
 
     private void formatHourString(){
@@ -239,7 +263,7 @@ public class DetailedInfoActivity extends AppCompatActivity{
                 wikiExtract = wikiExtract.substring(0,wikiExtract.length()-5);
                 // TODO implement method to shorten wiki if very long
                 //System.out.println(wikiExtract.trim().split(" ").length);
-                detailItems.add(new DetailItem("Wikipedia", wikiExtract));
+                detailItems.add(new DetailItemRecycler("Wikipedia", wikiExtract));
                 adapter.notifyDataSetChanged();
             }
         }, new Response.ErrorListener() {
