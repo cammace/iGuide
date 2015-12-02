@@ -24,6 +24,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
@@ -54,7 +55,7 @@ public class Help extends DialogFragment {
         // Initiate toolbar within dialog
         Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         // Add back button to dialog
-        toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
         // Add title to toolbar
         toolbar.setTitle(R.string.help);
 
@@ -96,7 +97,7 @@ public class Help extends DialogFragment {
                         break;
                     case 2:
                         dismiss();
-                        Toast.makeText(getActivity().getApplicationContext(), "Coming Soon", Toast.LENGTH_SHORT).show();
+                        Snackbar.make(MainActivity.mapContainer, "Feature coming soon", Snackbar.LENGTH_LONG).show();
                         break;
                     case 3:
                         dismiss();

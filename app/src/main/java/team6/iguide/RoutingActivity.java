@@ -1,14 +1,32 @@
 package team6.iguide;
 
+/***
+ iGuide
+ Copyright (C) 2015 Cameron Mace
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import android.content.res.ColorStateList;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NavUtils;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,8 +44,8 @@ import java.util.concurrent.TimeUnit;
 import team6.iguide.GraphhopperModel.GraphhopperModel;
 
 public class RoutingActivity extends AppCompatActivity {
+    // Our routing activity which is displayed when the user request a route.
 
-    private Toolbar toolbar;
     private GraphhopperModel route;
     PathOverlay line;
     MapView mv;
@@ -36,16 +54,15 @@ public class RoutingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.routing_activity);
-
-        toolbar = (Toolbar) findViewById(R.id.routing_toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.routing_toolbar);
         //setSupportActionBar(toolbar);
 
         // Makes status bar color same as PrimaryDarkColor
         if(Build.VERSION.SDK_INT >= 21)
-        getWindow().setStatusBarColor(getResources().getColor(R.color.PrimaryDarkColor));
+        getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.PrimaryDarkColor));
 
         // Adds back button to toolbar
-        toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,12 +108,12 @@ public class RoutingActivity extends AppCompatActivity {
 
         Marker desMarker = new Marker(null, null, new LatLng(route.getPaths().get(0).getPoints().getCoordinates().get(0).get(1),
                 route.getPaths().get(0).getPoints().getCoordinates().get(0).get(0)));
-        desMarker.setMarker(this.getResources().getDrawable(R.drawable.red_pin));
+        desMarker.setMarker(ContextCompat.getDrawable(this, R.drawable.red_pin));
         mv.addMarker(desMarker);
 
         Marker startMarker = new Marker(null, null, new LatLng(route.getPaths().get(0).getPoints().getCoordinates().get(route.getPaths().get(0).getPoints().getCoordinates().size()-1).get(1),
                 route.getPaths().get(0).getPoints().getCoordinates().get(route.getPaths().get(0).getPoints().getCoordinates().size()-1).get(0)));
-        startMarker.setMarker(this.getResources().getDrawable(R.drawable.green_pin));
+        startMarker.setMarker(ContextCompat.getDrawable(this, R.drawable.green_pin));
         mv.addMarker(startMarker);
 
     }
@@ -105,7 +122,7 @@ public class RoutingActivity extends AppCompatActivity {
 
         //line = new PathOverlay(mapContext.getResources().getColor(R.color.RoutePrimaryColor), 10);
 
-        line = new PathOverlay(this.getResources().getColor(R.color.RoutePrimaryColor), 10);
+        line = new PathOverlay(ContextCompat.getColor(this, R.color.RoutePrimaryColor), 10);
 
         for(int a =0; a<route.getPaths().get(0).getPoints().getCoordinates().size(); a++ )
             line.addPoint(route.getPaths().get(0).getPoints().getCoordinates().get(a).get(1),
@@ -120,7 +137,7 @@ public class RoutingActivity extends AppCompatActivity {
         // FAB for myLocationButton
         FloatingActionButton FAB;
         FAB = (FloatingActionButton) findViewById(R.id.begin_direction_fab);
-        FAB.setBackgroundTintList(ColorStateList.valueOf(this.getResources().getColor(R.color.BeginDirectionFABColor)));
+        FAB.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.BeginDirectionFABColor)));
         FAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -172,10 +189,7 @@ public class RoutingActivity extends AppCompatActivity {
         DecimalFormat df = new DecimalFormat("#.##");
         miles = Double.valueOf(df.format(miles));
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(miles);
-        sb.append(" Miles");
-        return(sb.toString());
+        return(miles + " Miles");
     }
 
     @Override

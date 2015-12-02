@@ -1,6 +1,26 @@
 package team6.iguide;
 
+/***
+ iGuide
+ Copyright (C) 2015 Cameron Mace
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import android.content.Context;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -12,7 +32,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
-import com.mapbox.mapboxsdk.api.ILatLng;
 import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.Marker;
@@ -27,6 +46,7 @@ import team6.iguide.OverpassModel.OverpassElement;
 import team6.iguide.OverpassModel.OverpassModel;
 
 public class Search {
+    // When user searches for something, executeSearch is called.
 
     MapView mv;
     private RequestQueue mRequestQueue;
@@ -36,6 +56,8 @@ public class Search {
     ArrayList<LatLng> resultBBList = new ArrayList<>();
     View progressBar;
     MainActivity mainActivity = new MainActivity();
+    int requestAttempt = 0;
+
 
     public void executeSearch(Context context, MapView mapView, String value, View PB){
 
@@ -48,7 +70,7 @@ public class Search {
         value = value.replace(" ", "%20");
 
         String URI = "https://overpass-api.de/api/interpreter?" +
-                "data=[out:json][timeout:25];(" +
+                "data=[out:json][timeout:60];(" +
                 "node[\"name\"~\"" + value + "\",i]" + boundingBox +
                 "way[\"name\"~\"" + value + "\",i]" + boundingBox +
                 "relation[\"name\"~\"" + value + "\",i]" + boundingBox +
@@ -64,7 +86,7 @@ public class Search {
 
     }
 
-    private void fetchJsonResponse(String URI) {
+    private void fetchJsonResponse(final String URI) {
 
         JsonObjectRequest req = new JsonObjectRequest(URI, new Response.Listener<JSONObject>() {
 
@@ -84,11 +106,16 @@ public class Search {
 
             @Override
             public void onErrorResponse(VolleyError error) {
-                // TODO Auto-generated method stub
                 Log.e("Search.Volley", "onErrorResponse ", error);
-                Toast.makeText(mapContext, "Search Timed out, Try again.", Toast.LENGTH_SHORT).show();
-                progressBar.setVisibility(View.INVISIBLE);
-
+                if(requestAttempt < 3){
+                    Snackbar.make(MainActivity.mapContainer, "Search taking longer then unusual", Snackbar.LENGTH_SHORT).show();
+                    requestAttempt++;
+                    fetchJsonResponse(URI);
+                }
+                else {
+                    Snackbar.make(MainActivity.mapContainer,"Search Timed out, Check your internet", Snackbar.LENGTH_LONG).show();
+                    progressBar.setVisibility(View.INVISIBLE);
+                }
             }
         });
         mRequestQueue.add(req);
@@ -103,6 +130,9 @@ public class Search {
     }
 
     public void showSearchResults() {
+        // This is the method used to show results on the map and move the camera. This methods
+        // honestly really messy coding due to the fact that there's so many different possibilities
+        // the JSON can give us, you've been warned!
 
         List<OverpassElement> q = results.getElements();
 
@@ -133,12 +163,12 @@ public class Search {
                     else marker = new Marker(q.get(0).getTags().getName(), q.get(0).getTags().getRef(), new LatLng(
                            q.get(0).getLat(), q.get(0).getLon()));
                     marker.setToolTip(new CustomInfoWindow(mapContext, mv, q, 0));
-                    marker.setMarker(mapContext.getResources().getDrawable(R.drawable.red_pin));
+                    marker.setMarker(ContextCompat.getDrawable(mapContext, R.drawable.red_pin));
                     mv.addMarker(marker);
                     //mv.getController().animateTo(new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
                     //mv.getController().setZoom(19);
-                    mv.getController().setZoomAnimated(18, new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()), true, true);
-
+                    if(q.get(0).getType().equals("way")) mv.getController().setZoomAnimated(18, new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()), true, true);
+                    else mv.getController().setZoomAnimated(18, new LatLng(q.get(0).getLat(), q.get(0).getLon()), true, true);
                 }
                 // Check if the search returned a room
                 else if (q.get(0).getTags().getIndoor() != null) {
@@ -152,7 +182,7 @@ public class Search {
                     Marker marker = new Marker(q.get(0).getTags().getName(), q.get(0).getTags().getRef(), new LatLng(
                             q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
                     marker.setToolTip(new CustomInfoWindow(mapContext, mv, q, 0));
-                    marker.setMarker(mapContext.getResources().getDrawable(R.drawable.red_pin));
+                    marker.setMarker(ContextCompat.getDrawable(mapContext, R.drawable.red_pin));
                     mv.addMarker(marker);
                     //mv.getController().animateTo(new LatLng(q.get(0).getCenter().getLat(), q.get(0).getCenter().getLon()));
                     //mv.getController().setZoom(21);
@@ -166,7 +196,7 @@ public class Search {
                         marker = new Marker(q.get(i).getTags().getName(), q.get(i).getTags().getRef(), new LatLng(
                                 q.get(i).getCenter().getLat(), q.get(i).getCenter().getLon()));
                         marker.setToolTip(new CustomInfoWindow(mapContext, mv, q, i));
-                        marker.setMarker(mapContext.getResources().getDrawable(R.drawable.red_pin));
+                        marker.setMarker(ContextCompat.getDrawable(mapContext, R.drawable.red_pin));
                         mv.addMarker(marker);
 
                         resultBBList.add(new LatLng(q.get(i).getCenter().getLat(), q.get(i).getCenter().getLon()));
@@ -175,7 +205,7 @@ public class Search {
                         marker = new Marker(q.get(i).getTags().getName(), q.get(i).getTags().getRef(), new LatLng(
                                 q.get(i).getLat(), q.get(i).getLon()));
                         marker.setToolTip(new CustomInfoWindow(mapContext, mv, q, i));
-                        marker.setMarker(mapContext.getResources().getDrawable(R.drawable.red_pin));
+                        marker.setMarker(ContextCompat.getDrawable(mapContext, R.drawable.red_pin));
                         mv.addMarker(marker);
 
                         resultBBList.add(new LatLng(q.get(i).getLat(), q.get(i).getLon()));

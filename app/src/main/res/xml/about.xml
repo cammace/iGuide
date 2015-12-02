@@ -6,14 +6,13 @@
         android:key="Version"
         android:title="Version" />
 
-    <!-- TODO change uri to google play store once app is submitted -->
     <Preference
         android:key="Rate App"
         android:title="Rate App"
         android:summary="Give or update your rating">
-        <intent
+        <!--<intent
             android:action="android.intent.action.VIEW"
-            android:data="http://google.com" />
+            android:data="http://google.com" />-->
         </Preference>
 
     <Preference

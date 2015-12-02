@@ -29,7 +29,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.SearchRecentSuggestions;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
@@ -89,10 +88,8 @@ import team6.iguide.IssueDataModel.IssueDataModel;
 public class MainActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
-    private NavigationView navigationView;
     private DrawerLayout drawerLayout;
     private MenuItem searchItem;
-    private SearchView searchView;
     private MapView mv;
     public  View progressBar;
     static int currentFloor;
@@ -107,28 +104,22 @@ public class MainActivity extends AppCompatActivity {
     int updateBusTimer = 0;
     MenuItem previousDrawerMenuItem;
     List<List> poiMarkers = new ArrayList<>();
+    List<List> parkingLots = new ArrayList<>();
+    List<List> busStopMarkers = new ArrayList<>();
     boolean poiShow = false;
     boolean busRouteShow = false;
     int currentBusRouteShowing;
     boolean campusIssueMarkersVisable = false;
     String currentMapViewOverlay = "";
     String currentChildMenuItem = "";
+    String currentParkingLot = "";
+    public static View mapContainer;
+    Snackbar campusIssueSnack;
+    public static boolean userReportedIssue = false;
 
-
-
-
-
-    private DrawerLayout mDrawerLayout;
     ExpandableListAdapter mMenuAdapter;
-    AnimatedExpandableListView  expandableList;
     List<ExpandedMenuModel> listDataHeader;
     HashMap<ExpandedMenuModel, List<String>> listDataChild;
-
-
-
-
-
-
 
     // Tiles
     private TilesOverlay campusLoopTiles;
@@ -140,11 +131,12 @@ public class MainActivity extends AppCompatActivity {
     BoundingBox scrollLimit = new BoundingBox(29.731896194504913, -95.31928449869156, 29.709354854765827, -95.35668790340424);
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mapContainer = findViewById(R.id.map_container);
 
-        // Initializing Toolbar and setting it as the actionbar
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -153,78 +145,34 @@ public class MainActivity extends AppCompatActivity {
         progressBar = createProgressBar();
         progressBar.setVisibility(View.INVISIBLE);
 
-        // Associate searchable configuration with the SearchView
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-
-        searchView = new SearchView(getSupportActionBar().getThemedContext());
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        searchView.setIconifiedByDefault(true);
-        searchView.setQueryRefinementEnabled(true);
-        searchView.setMaxWidth(2000);
-
-
-        SearchView.SearchAutoComplete searchAutoComplete = (SearchView.SearchAutoComplete) searchView
-                .findViewById(android.support.v7.appcompat.R.id.search_src_text);
-
-        // Collapse the search menu when the user hits the back key
-        searchAutoComplete.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                //log.trace("onFocusChange(): " + hasFocus);
-                if (!hasFocus)
-                    showSearch(false);
-            }
-        });
-
-
-        // Creates TextView Cursor
-        try {
-            // This sets the cursor resource ID to 0 or @null
-            // which will make it visible on white background.
-            Field mCursorDrawableRes = TextView.class
-                    .getDeclaredField("mCursorDrawableRes");
-
-            mCursorDrawableRes.setAccessible(true);
-            mCursorDrawableRes.set(searchAutoComplete, 0);
-
-        } catch (Exception e) {
-        }
-
         navigationDrawer();
 
         // Initialize MapView
         if(mv == null) setMap();
 
-        // Get the POI and populate list so it's ready if user toogles POI in menu
+        // Get the POI and populate list so it's ready if user toggles POI in menu
         PointOfInterest pointOfInterest = new PointOfInterest();
         poiMarkers = pointOfInterest.getPOI(MainActivity.this, mv);
-    }
 
-    public String getCurrentMapViewOverlay(){
-        return currentMapViewOverlay;
-    }
+        // Do the same for the parking lots
+        GetParkingLots getParkingLots = new GetParkingLots();
+        parkingLots = getParkingLots.getParkingLots(MainActivity.this, mv);
+
+
+        // Get the busStops and populate list so it's ready if user toggles a bus line in menu
+        //GetBusStops getBusStops = new GetBusStops();
+       // busStopMarkers = getBusStops.getBusStops(MainActivity.this, mv);
+    }// End onCreate
 
     private void navigationDrawer(){
+        // This method might look intimidating because of its length but the majority of it we are
+        // just defining things and handling onclick events. We begin by defining a few things.
 
-        //Initializing NavigationView
-        navigationView = (NavigationView) findViewById(R.id.navigation_view);
+        final AnimatedExpandableListView expandableList = (AnimatedExpandableListView) findViewById(R.id.navigationmenu);
+        listDataHeader = new ArrayList<>();
+        listDataChild = new HashMap<>();
 
-
-
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
-        expandableList = (AnimatedExpandableListView) findViewById(R.id.navigationmenu);
-
-
-        prepareListData();
-        mMenuAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild, expandableList);
-
-        // setting list adapter
-        expandableList.setAdapter(mMenuAdapter);
-    }
-    private void prepareListData() {
-        listDataHeader = new ArrayList<ExpandedMenuModel>();
-        listDataChild = new HashMap<ExpandedMenuModel, List<String>>();
-
+        // This is where we add our parent/header items to the listDataHeader.
         ExpandedMenuModel item1 = new ExpandedMenuModel();
         item1.setIconName(getString(R.string.poi));
         item1.setIconImg(R.drawable.ic_place_black_24dp);
@@ -256,42 +204,42 @@ public class MainActivity extends AppCompatActivity {
         item6.setIconImg(R.drawable.ic_settings_black_24dp);
         listDataHeader.add(item6);
 
+        // Now we create a list for each child (list that appears under certain parent clicks).
+        List<String> parkingHeader = new ArrayList<>();
+        parkingHeader.add(getString(R.string.economy_lot));
+        parkingHeader.add(getString(R.string.faculty_lot));
+        parkingHeader.add(getString(R.string.garage_parking));
+        parkingHeader.add(getString(R.string.student_lots));
+        parkingHeader.add(getString(R.string.visitor_lots));
 
-        // Adding child data
-        List<String> heading1= new ArrayList<String>();
-        heading1.add("Economy Lots");
-        heading1.add("Faculty Lots");
-        heading1.add("Garage Parking");
-        heading1.add("Student Lots");
-        heading1.add("Visitor Parking");
+        List<String> transitHeader = new ArrayList<>();
+        transitHeader.add(getString(R.string.campus_loop));
+        transitHeader.add(getString(R.string.outer_loop));
+        transitHeader.add(getString(R.string.erp_express));
+        transitHeader.add(getString(R.string.eastwood_erp_line));
 
-        List<String> heading2= new ArrayList<String>();
-        heading2.add(getString(R.string.campus_loop));
-        heading2.add(getString(R.string.outer_loop));
-        heading2.add(getString(R.string.erp_express));
-        heading2.add(getString(R.string.eastwood_erp_line));
+        // this is where we place the list we just created within listDataChild.
+        listDataChild.put(listDataHeader.get(1), parkingHeader);// Header, Child data
+        listDataChild.put(listDataHeader.get(2), transitHeader);
 
-        listDataChild.put(listDataHeader.get(1), heading1);// Header, Child data
-        listDataChild.put(listDataHeader.get(2), heading2);
-
-
-
+        // Now that we have definded all of our navigation menu items, we need to handle their clicks.
+        // for items without a child, we go ahead and execute the operation, however, if a parent has
+        // a child (such as transit) we must determine if the child's already showing or not. If so we
+        // hide the child, else we display it.
         expandableList.setOnGroupClickListener(new team6.iguide.AnimatedExpandableListView.OnGroupClickListener() {
 
             @Override
+            @SuppressWarnings("unchecked")
             public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
 
+                // Had to add this playSoundEffect so when an items clicked it makes the typical android sound.
                 v.playSoundEffect(SoundEffectConstants.CLICK);
-                currentChildMenuItem = "";
-
-                //System.out.println(parent.getExpandableListAdapter().getGroup(groupPosition).toString());
 
                 switch (listDataHeader.get(groupPosition).getIconName()) {
                     case "Places of Interest":
-                        drawerLayout.closeDrawers();
                         mv.clearMarkerFocus();
                         mv.clear();
-                        campusIssueMarkersVisable = false;
+                        drawerLayout.closeDrawers();
                         if(busRouteShow) stopBusRoute(currentBusRouteShowing);
                         if (!poiShow) {
                             poiShow = true;
@@ -342,6 +290,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             currentMapViewOverlay = " ";
                             campusIssueMarkersVisable = false;
+                            campusIssueSnack.dismiss();
                             mv.clearMarkerFocus();
                             mv.clear();
                         }
@@ -373,13 +322,10 @@ public class MainActivity extends AppCompatActivity {
         expandableList.setOnChildClickListener(new team6.iguide.AnimatedExpandableListView.OnChildClickListener() {
 
             @Override
+            @SuppressWarnings("unchecked")
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
 
-                if(busRouteShow) stopBusRoute(currentBusRouteShowing);
-                mv.clearMarkerFocus();
-                mv.clear();
-                campusIssueMarkersVisable = false;
-                poiShow = false;
+                clearMap();
 
                 switch (parent.getExpandableListAdapter().getChild(groupPosition, childPosition).toString()) {
 
@@ -434,29 +380,69 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case "Economy Lots":
+                        clearMap();
+                        if(currentMapViewOverlay.equals("Parking") && currentParkingLot.equals("economy")) {
+                            currentMapViewOverlay = "";
+                            mv.removeMarkers(parkingLots.get(0));
+                        }
+                        else{
+                            currentMapViewOverlay = "Parking";
+                            currentParkingLot = "economy";
+                            mv.addMarkers(parkingLots.get(0));
+                        }
                         drawerLayout.closeDrawers();
-                        currentMapViewOverlay = "Parking";
-                        Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT).show();
                         break;
                     case "Faculty Lots":
+                        clearMap();
+                        if(currentMapViewOverlay.equals("Parking") && currentParkingLot.equals("faculty")) {
+                            currentMapViewOverlay = "";
+                            mv.removeMarkers(parkingLots.get(1));
+                        }
+                        else{
+                            currentMapViewOverlay = "Parking";
+                            currentParkingLot = "faculty";
+                            mv.addMarkers(parkingLots.get(1));
+                        }
                         drawerLayout.closeDrawers();
-                        currentMapViewOverlay = "Parking";
-                        Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT).show();
                         break;
                     case "Garage Parking":
+                        clearMap();
+                        if(currentMapViewOverlay.equals("Parking") && currentParkingLot.equals("garage")) {
+                            currentMapViewOverlay = "";
+                            mv.removeMarkers(parkingLots.get(2));
+                        }
+                        else{
+                            currentMapViewOverlay = "Parking";
+                            currentParkingLot = "garage";
+                            mv.addMarkers(parkingLots.get(2));
+                        }
                         drawerLayout.closeDrawers();
-                        currentMapViewOverlay = "Parking";
-                        Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT).show();
                         break;
                     case "Student Lots":
+                        clearMap();
+                        if(currentMapViewOverlay.equals("Parking") && currentParkingLot.equals("student")) {
+                            currentMapViewOverlay = "";
+                            mv.removeMarkers(parkingLots.get(3));
+                        }
+                        else{
+                            currentMapViewOverlay = "Parking";
+                            currentParkingLot = "student";
+                            mv.addMarkers(parkingLots.get(3));
+                        }
                         drawerLayout.closeDrawers();
-                        currentMapViewOverlay = "Parking";
-                        Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT).show();
                         break;
                     case "Visitor Parking":
+                        clearMap();
+                        if(currentMapViewOverlay.equals("Parking") && currentParkingLot.equals("visitor")) {
+                            currentMapViewOverlay = "";
+                            mv.removeMarkers(parkingLots.get(4));
+                        }
+                        else{
+                            currentMapViewOverlay = "Parking";
+                            currentParkingLot = "visitor";
+                            mv.addMarkers(parkingLots.get(4));
+                        }
                         drawerLayout.closeDrawers();
-                        currentMapViewOverlay = "Parking";
-                        Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Coming Soon", Snackbar.LENGTH_SHORT).show();
                         break;
 
                 }
@@ -494,6 +480,22 @@ public class MainActivity extends AppCompatActivity {
 
         //calling sync state is necessary or else your hamburger icon wont show up
         actionBarDrawerToggle.syncState();
+
+        mMenuAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild, expandableList);
+
+        // setting list adapter
+        expandableList.setAdapter(mMenuAdapter);
+    }
+
+    private void clearMap(){
+        if(campusIssueSnack != null && campusIssueSnack.isShown()) campusIssueSnack.dismiss();
+        if(busRouteShow) stopBusRoute(currentBusRouteShowing);
+        mv.closeCurrentTooltip();
+        mv.clearMarkerFocus();
+        mv.clear();
+        campusIssueMarkersVisable = false;
+        poiShow = false;
+
     }
 
     @Override
@@ -507,7 +509,6 @@ public class MainActivity extends AppCompatActivity {
         setIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(setIntent);
     }
-
 
     private void userLocationFAB(){
         // This method sets up the floating action button (FAB) and handles the on click which will
@@ -525,7 +526,7 @@ public class MainActivity extends AppCompatActivity {
                     else
                         Toast.makeText(getApplicationContext(), getString(R.string.userLocationNotWithinBB), Toast.LENGTH_SHORT).show();
                 } else
-                    Toast.makeText(getApplicationContext(), "Your current location cannot be found", Toast.LENGTH_SHORT).show();
+                    Snackbar.make(mapContainer, "Your current location cannot be found", Snackbar.LENGTH_LONG).show();
             }
         });
     }
@@ -534,8 +535,10 @@ public class MainActivity extends AppCompatActivity {
         // Stop handler from moving and updating bus marker
         transitHandler.removeCallbacksAndMessages(null);
         // Clear all bus markers
-        // TODO fix so that it only clears bus markers instead of all
         mv.clear();
+
+        // reshow the indoor overlay
+        changeFloorLevel(getApplicationContext(), mv, currentFloor - 1);
 
         // Change boolean to false so globally we know we are no long showing a bus route
         busRouteShow = false;
@@ -570,6 +573,49 @@ public class MainActivity extends AppCompatActivity {
 
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        // Associate searchable configuration with the SearchView
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+
+        // I tell the compiler that getSupportActionBar will never be null since I just set it
+        // above. This gets rid of the annoying warnings the compiler kept throwing at me.
+        assert getSupportActionBar() != null;
+
+        SearchView searchView = new SearchView(getSupportActionBar().getThemedContext());
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(true);
+        searchView.setQueryRefinementEnabled(true);
+        searchView.setMaxWidth(2000);
+
+
+
+        SearchView.SearchAutoComplete searchAutoComplete = (SearchView.SearchAutoComplete) searchView
+                .findViewById(android.support.v7.appcompat.R.id.search_src_text);
+
+        // Collapse the search menu when the user hits the back key
+        searchAutoComplete.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                //log.trace("onFocusChange(): " + hasFocus);
+                if (!hasFocus)
+                    showSearch(false);
+            }
+        });
+
+
+        // Creates TextView Cursor
+        try {
+            // This sets the cursor resource ID to 0 or @null
+            // which will make it visible on white background.
+            Field mCursorDrawableRes = TextView.class
+                    .getDeclaredField("mCursorDrawableRes");
+
+            mCursorDrawableRes.setAccessible(true);
+            mCursorDrawableRes.set(searchAutoComplete, 0);
+
+        } catch (Exception e) {
+            Log.e("MainActivity", "onCreateOptionsMenu: ",e);
+        }
 
         searchItem = menu.add(android.R.string.search_go);
 
@@ -608,7 +654,27 @@ public class MainActivity extends AppCompatActivity {
 
     public void displayCampusIssues(){
 
-        Toast.makeText(getApplicationContext(), "Long press to add an issue at that location", Toast.LENGTH_SHORT).show();
+        progressBar.setVisibility(View.VISIBLE);
+
+        campusIssueSnack = Snackbar.make(mapContainer, "Long press to add an issue at that location", Snackbar.LENGTH_INDEFINITE);
+        campusIssueSnack.setAction("Dismiss", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Handle click
+            }
+        });
+        if(!userReportedIssue) campusIssueSnack.show();
+        else{
+            userReportedIssue = false;
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    campusIssueSnack.show();
+                }
+            }, 5000);
+        }
+
         campusIssueMarkersVisable = true;
 
         // Create volley queue
@@ -626,7 +692,6 @@ public class MainActivity extends AppCompatActivity {
                 String issueData = response.toString();
                 IssueDataModel issueDataModel = gson.fromJson(issueData, IssueDataModel.class);
 
-                //System.out.println(issueDataModel.getMarkers().get(0).getPid());
                 for(int i=0; i<issueDataModel.getMarkers().size(); i++){
 
                     Marker issue = new Marker(issueDataModel.getMarkers().get(i).getTitle(),
@@ -637,20 +702,20 @@ public class MainActivity extends AppCompatActivity {
 
                     switch (issueDataModel.getMarkers().get(i).getType()) {
                         case "Sidewalk light out":
-                            issue.setMarker(getResources().getDrawable(R.drawable.light));
+                            issue.setMarker(ContextCompat.getDrawable(MainActivity.this, R.drawable.light));
                             break;
                         case "IT Department":
-                            issue.setMarker(getResources().getDrawable(R.drawable.computer));
+                            issue.setMarker(ContextCompat.getDrawable(MainActivity.this, R.drawable.computer));
                             break;
                         case "Room temperature":
-                            issue.setMarker(getResources().getDrawable(R.drawable.temperature));
+                            issue.setMarker(ContextCompat.getDrawable(MainActivity.this, R.drawable.temperature));
                             break;
                         default:
-                            issue.setMarker(getResources().getDrawable(R.drawable.other));
+                            issue.setMarker(ContextCompat.getDrawable(MainActivity.this, R.drawable.other));
                             break;
                     }
                     mv.addMarker(issue);
-
+                    progressBar.setVisibility(View.INVISIBLE);
                 }
 
             }
@@ -670,15 +735,6 @@ public class MainActivity extends AppCompatActivity {
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-
-
-
-
-
-
-
-
 
     }
 
@@ -700,19 +756,19 @@ public class MainActivity extends AppCompatActivity {
             public boolean onMenuItemClick(MenuItem item) {
 
                 if(item.getTitle().equals("Floor 1")) {
-                    if (currentFloor == 0) Toast.makeText(getApplicationContext(), "Already showing Floor 1", Toast.LENGTH_SHORT).show();
+                    if (currentFloor == 0) Snackbar.make(mapContainer, "Already showing Floor 1", Snackbar.LENGTH_LONG).show();
                     else{
                         changeFloorLevel(getApplicationContext(), mv, 0);
                     }
                 }
                 if(item.getTitle().equals("Floor 2")) {
-                    if (currentFloor == 1) Toast.makeText(getApplicationContext(), "Already showing Floor 2", Toast.LENGTH_SHORT).show();
+                    if (currentFloor == 1) Snackbar.make(mapContainer, "Already showing Floor 2", Snackbar.LENGTH_LONG).show();
                     else{
                         changeFloorLevel(getApplicationContext(), mv, 1);
                     }
                 }
                 if(item.getTitle().equals("Floor 3")) {
-                    if (currentFloor == 2) Toast.makeText(getApplicationContext(), "Already showing Floor 3", Toast.LENGTH_SHORT).show();
+                    if (currentFloor == 2) Snackbar.make(mapContainer, "Already showing Floor 3", Snackbar.LENGTH_LONG).show();
                     else{
                         changeFloorLevel(getApplicationContext(), mv, 2);
                     }
@@ -750,6 +806,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
+            @SuppressWarnings("unchecked")
             public void onZoom(ZoomEvent event) {
                 // This listener is important only when POI is selected. The reason being is that at
                 // certain zoom levels different POI are displayed. Therefore, we only ever do anything
@@ -800,7 +857,7 @@ public class MainActivity extends AppCompatActivity {
                     bundle.putDouble("LOCATIONLON", pressLatLon.getLongitude());
 
                     Intent intent = new Intent(MainActivity.this, CampusIssueReportActivity.class);
-                    intent.putExtra("BUNDLE", bundle);
+                    intent.putExtras(bundle);
                     startActivity(intent);
                 }
                 return true;
@@ -813,7 +870,6 @@ public class MainActivity extends AppCompatActivity {
 
         // The last thing we do setting up the main mapView is that we go ahead and display the
         // "Floor 1" level.
-        //System.out.println();
         changeFloorLevel(getApplicationContext(), mv, 0);
 
         // Once the main map is setup, we go ahead and assign tileLayers for all the bus routes
@@ -881,9 +937,8 @@ public class MainActivity extends AppCompatActivity {
                     SearchSuggestion.AUTHORITY, SearchSuggestion.MODE);
             suggestions.saveRecentQuery(query, null);
 
-            Search search = new Search();
             // Get the search query
-
+            Search search = new Search();
             search.executeSearch(this, mv, query, progressBar);
 
 
@@ -944,13 +999,14 @@ public class MainActivity extends AppCompatActivity {
                 PB.setY(contentView.getY() + toolbar.getHeight() + getStatusBarHeight() - 15);
 
                 ViewTreeObserver observer = PB.getViewTreeObserver();
-                observer.removeGlobalOnLayoutListener(this);
+                observer.removeOnGlobalLayoutListener(this);
             }
         });
         return PB;
     }
 
     public int getStatusBarHeight() {
+        // Used for the progressbar
         int result = 0;
         int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
         if (resourceId > 0) {
@@ -1007,6 +1063,7 @@ public class MainActivity extends AppCompatActivity {
         currentFloor = level;
     }// end changeFloorLevel
 
+    @SuppressWarnings("unchecked")
     public void playBusRoute(final int busRoute){
         // This method creates a handler that moves the bus markers every given second. This makes
         // the markers move smoother on the map instead of jumping around. After x amount of time,
@@ -1015,6 +1072,10 @@ public class MainActivity extends AppCompatActivity {
         // Go ahead and clear the map
         mv.clearMarkerFocus();
         mv.clear();
+
+        // remove indoor overlay, this will free up some memory for us to use
+        mv.getOverlays().remove(floorLevel);
+        currentFloor = currentFloor + 1; // add 1 to currentFloor level so if statement will become true within changeFloorLevel
 
         // First we check to ensure no other transit overlay is present. If there is one we remove it
         if(mv.getOverlays().contains(campusLoopTiles)) stopBusRoute(1);
@@ -1069,6 +1130,7 @@ public class MainActivity extends AppCompatActivity {
                         switch(busRoute){
                             case 1:
                                 busMarker.setMarker(ContextCompat.getDrawable(getApplicationContext(), R.drawable.green_bus_marker));
+                                //mv.addMarkers(busStopMarkers.get(0));
                                 break;
                             case 2:
                                 busMarker.setMarker(ContextCompat.getDrawable(getApplicationContext(), R.drawable.brown_bus_marker));
@@ -1105,7 +1167,7 @@ public class MainActivity extends AppCompatActivity {
                         -95.33725261688232 + padding, // East
                         29.71621539329541 - padding,// South
                         -95.34826040267944 - padding // West
-                        ), true, true);
+                ), true, true);
                 break;
             case 2:
                 mv.getOverlays().add(0, eastwoodErpLineTiles);
@@ -1142,6 +1204,7 @@ public class MainActivity extends AppCompatActivity {
         mv.invalidate();
     }
 
+    @SuppressWarnings("unchecked")
     private void updateCurrentBusLocation(String URI, final int busRoute) {
         // This method is used to fetch json, parse it, and then update/create the list that tells
         // where to move the bus markers next.
@@ -1179,8 +1242,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Once we have the amount of buses on route and their locations, we can then operate on them.
                 // If the route currently contains no buses, we display a message telling the user
-                if(busesInService == 0 && firstBusCheck) Toast.makeText(getApplicationContext(),
-                        getResources().getString(R.string.noBusOnRoute), Toast.LENGTH_SHORT).show();
+                if(busesInService == 0 && firstBusCheck) Snackbar.make(mapContainer, getString(R.string.noBusOnRoute), Snackbar.LENGTH_LONG).show();
 
                 // This is where we populate the busPlot list with the results given by the pointsBetween
                 // method. This essentially smooths the marker movement so it doesn't jump so much.
@@ -1216,6 +1278,10 @@ public class MainActivity extends AppCompatActivity {
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+    }
+
+    public String getCurrentMapViewOverlay(){
+        return currentMapViewOverlay;
     }
 
 }

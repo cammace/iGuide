@@ -1,22 +1,40 @@
 package team6.iguide;
 
+/***
+ iGuide
+ Copyright (C) 2015 Cameron Mace
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.util.Log;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseExpandableListAdapter;
-import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import team6.iguide.AnimatedExpandableListView.AnimatedExpandableListAdapter;
 
 import java.util.HashMap;
 import java.util.List;
 
+import team6.iguide.AnimatedExpandableListView.AnimatedExpandableListAdapter;
+
 public class ExpandableListAdapter extends AnimatedExpandableListAdapter {
+    // This class is for the navigation drawer expandable item adapter. To understand how this works
+    // read the comments within AnimatedExpandableListView.
 
     private Context mContext;
     private List<ExpandedMenuModel> mListDataHeader; // header titles
@@ -41,7 +59,7 @@ public class ExpandableListAdapter extends AnimatedExpandableListAdapter {
     public int getRealChildrenCount(int groupPosition) {
         int childCount=0;
 
-        //TODO fix this so I don't personally have to come in here and tell it what group dont have a child
+        //TODO fix this so I don't personally have to come in here and tell it what group don't have a child
         if(groupPosition != 0) {
             if(groupPosition != 3) {
                 if (groupPosition != 4) {
@@ -112,8 +130,8 @@ public class ExpandableListAdapter extends AnimatedExpandableListAdapter {
                 mainActivity.getCurrentMapViewOverlay().matches("Parking")){
             //System.out.println("header Name: " + headerTitle.getIconName());
             if (mainActivity.getCurrentMapViewOverlay().equals(headerTitle.getIconName()) ) {
-                lblListHeader.setTextColor(mContext.getResources().getColor(R.color.PrimaryColor));
-                headerIcon.setColorFilter(mContext.getResources().getColor(R.color.PrimaryColor));
+                lblListHeader.setTextColor(ContextCompat.getColor(mContext, R.color.PrimaryColor));
+                headerIcon.setColorFilter(ContextCompat.getColor(mContext, R.color.PrimaryColor));
             }
         else{
             lblListHeader.setTextColor(Color.parseColor("#212121"));

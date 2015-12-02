@@ -61,6 +61,11 @@ public class OverpassTags implements Serializable{
     private String landuse;
     @Expose
     private String leisure;
+    @Expose
+    private String highway;
+    @SerializedName("route_ref")
+    @Expose
+    private String routeRef;
 
     public String getIndoor() {
         return indoor;
@@ -244,6 +249,22 @@ public class OverpassTags implements Serializable{
 
     public void setLeisure(String leisure){
         this.leisure = leisure;
+    }
+
+    public String getHighway(){
+        return highway;
+    }
+
+    public void setHighway(String highway){
+        this.highway = highway;
+    }
+
+    public String getRouteRef(){
+        return routeRef;
+    }
+
+    public void setRouteRef(String routeRef){
+        this.routeRef = routeRef;
     }
 
 

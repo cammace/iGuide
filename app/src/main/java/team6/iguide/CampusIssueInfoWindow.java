@@ -1,20 +1,37 @@
 package team6.iguide;
 
+/***
+ iGuide
+ Copyright (C) 2015 Cameron Mace
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.SearchRecentSuggestions;
+import android.os.Handler;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -23,7 +40,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.views.InfoWindow;
 import com.mapbox.mapboxsdk.views.MapView;
@@ -31,16 +47,13 @@ import com.mapbox.mapboxsdk.views.MapView;
 import java.util.List;
 
 import team6.iguide.IssueDataModel.IssueMarker;
-import team6.iguide.OverpassModel.OverpassElement;
 
 public class CampusIssueInfoWindow extends InfoWindow {
-
+    // This class is used to handle what happens when an issue marker is clicked.
 
     private Context mContext;
     String title;
     String ref;
-    String status;
-    String type;
     String shortTitle;
     String shortRef;
 
@@ -48,6 +61,8 @@ public class CampusIssueInfoWindow extends InfoWindow {
         super(R.layout.campus_issue_info_window, mv);
         this.mContext = context;
 
+        // We clip the layout so it displays rounded corners. This however only works with API 21
+        // and higher.
         if(Build.VERSION.SDK_INT >= 21) {
             getView().findViewById(R.id.mainpanal).setClipToOutline(true);
             mView.setElevation(24);
@@ -65,7 +80,20 @@ public class CampusIssueInfoWindow extends InfoWindow {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                Toast.makeText(mContext, "Issue Resolved", Toast.LENGTH_SHORT).show();
+                                Snackbar.make(MainActivity.mapContainer, "Issue resolved", Snackbar.LENGTH_LONG).show();
+
+                                Handler handler = new Handler();
+                                handler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Snackbar.make(MainActivity.mapContainer, "Long press to add an issue at that location", Snackbar.LENGTH_INDEFINITE).setAction("Dismiss", new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                // Handle click here
+                                            }
+                                        }).show();
+                                    }
+                                }, 5000);
 
                                 resolveIssue(issueInfo.get(position).getPid());
                                 close();
@@ -153,8 +181,21 @@ public class CampusIssueInfoWindow extends InfoWindow {
 
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(mContext, "Error occurred resolving issue", Toast.LENGTH_SHORT).show();
+                Snackbar.make(MainActivity.mapContainer, "Error occurred resolving issue", Snackbar.LENGTH_LONG).show();
                 Log.e("issue.Volley", "onErrorResponse: ", error);
+
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Snackbar.make(MainActivity.mapContainer, "Long press to add an issue at that location", Snackbar.LENGTH_INDEFINITE).setAction("Dismiss", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                // Handle click here
+                            }
+                        }).show();
+                    }
+                }, 5000);
 
             }
         });

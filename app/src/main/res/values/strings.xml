@@ -38,6 +38,12 @@
     <string name="eastwood_erp_line">Eastwood ERP Line</string>
     <string name="erp_express">ERP Express</string>
 
+    <string name="economy_lot">Economy Lots</string>
+    <string name="faculty_lot">Faculty Lots</string>
+    <string name="garage_parking">Garage Parking</string>
+    <string name="student_lots">Student Lots</string>
+    <string name="visitor_lots">Visitor Parking</string>
+
 
 
     <!-- Help Dialog Fragment -->

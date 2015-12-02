@@ -7,7 +7,8 @@
     android:layout_height="match_parent"
     tools:context=".Settings"
     android:orientation="vertical"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:id="@+id/settings_layout" >
 
     <include
         android:id="@+id/toolbar"

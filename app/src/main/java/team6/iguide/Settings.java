@@ -26,6 +26,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.NavUtils;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -44,10 +45,10 @@ public class Settings extends AppCompatActivity {
 
         // Makes status bar color same as PrimaryDarkColor
         if(Build.VERSION.SDK_INT >= 21)
-        getWindow().setStatusBarColor(getResources().getColor(R.color.PrimaryDarkColor));
+        getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.PrimaryDarkColor));
 
         // Adds back button to toolbar and handle its onClick
-        toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -82,6 +83,7 @@ public class Settings extends AppCompatActivity {
                                     SearchRecentSuggestions suggestions = new SearchRecentSuggestions(getActivity(),
                                             SearchSuggestion.AUTHORITY, SearchSuggestion.MODE);
                                     suggestions.clearHistory();
+                                    //if (getView() != null) Snackbar.make(getView().findViewById(R.id.settings_layout), getString(R.string.clear_history_alert__positive_toast_msg), Snackbar.LENGTH_LONG).show();
                                     Toast.makeText(getActivity(), getString(R.string.clear_history_alert__positive_toast_msg), Toast.LENGTH_SHORT).show();
                                 }
                             });

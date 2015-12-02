@@ -1,51 +1,61 @@
 package team6.iguide;
 
-import android.app.Activity;
-import android.app.ActivityOptions;
-import android.app.Fragment;
-import android.app.FragmentManager;
+/***
+ iGuide
+ Copyright (C) 2015 Cameron Mace
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.util.Pair;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.geometry.BoundingBox;
-import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.views.InfoWindow;
 import com.mapbox.mapboxsdk.views.MapView;
 
 import java.util.List;
 
-import team6.iguide.GraphhopperModel.GraphhopperModel;
 import team6.iguide.OverpassModel.OverpassElement;
 
 public class CustomInfoWindow extends InfoWindow {
-
+    // This is where we define what happens when the user clicks on a marker.
 
     private Context mContext;
-    String title;
-    String ref;
-    String address;
-    String country;
-    Double desLat;
-    Double desLon;
-    BoundingBox scrollLimit = new BoundingBox(29.731896194504913, -95.31928449869156, 29.709354854765827, -95.35668790340424);
-
+    private String title;
+    private String ref;
+    private String address;
+    private String country;
+    private Double desLat;
+    private Double desLon;
+    private BoundingBox scrollLimit = new BoundingBox(29.731896194504913, -95.31928449869156, 29.709354854765827, -95.35668790340424);
 
     public CustomInfoWindow(Context context, final MapView mv, final List<OverpassElement> searchResults, final int listPosition) {
         super(R.layout.infowindow_custom, mv);
         this.mContext = context;
 
+        // We clip the layout so it displays rounded corners. This however only works with API 21
+        // and higher.
         if(Build.VERSION.SDK_INT >= 21) {
             getView().findViewById(R.id.mainpanal).setClipToOutline(true);
             mView.setElevation(24);
@@ -63,16 +73,17 @@ public class CustomInfoWindow extends InfoWindow {
         routing.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                if(mv.getUserLocation() == null){
-                    Toast.makeText(mContext, "Can't find your location on map", Toast.LENGTH_SHORT).show();
+                if (mv.getUserLocation() == null) {
+                    Snackbar.make(MainActivity.mapContainer, "Can't find your location on map", Snackbar.LENGTH_LONG).show();
                     return;
                 }
 
-                if(scrollLimit.contains(mv.getUserLocation())){
+                if (scrollLimit.contains(mv.getUserLocation())) {
                     MainActivity mainActivity = new MainActivity();
                     mainActivity.displayRouting(mView.getContext(), mv, desLat, desLon);
                     close();
-                } else Toast.makeText(mContext, mContext.getString(R.string.userLocationNotWithinBB), Toast.LENGTH_SHORT).show();
+                } else
+                    Snackbar.make(MainActivity.mapContainer, mContext.getString(R.string.userLocationNotWithinBB), Snackbar.LENGTH_LONG).show();
 
             }
         });
