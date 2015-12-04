@@ -12,12 +12,17 @@
     <LinearLayout
         android:layout_height="match_parent"
         android:layout_width="match_parent"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
         <include
             android:id="@+id/toolbar"
             layout="@layout/tool_bar"
             />
+
+       <!-- <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:id="@+id/progress_bar" /> -->
 
         <android.support.design.widget.CoordinatorLayout
             android:id="@+id/map_container"
