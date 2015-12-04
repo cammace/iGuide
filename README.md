@@ -18,9 +18,8 @@ searchable within app.
 ###Screenshots
 
 <img src="https://github.com/cammace/iGuide/blob/master/Screenshots/phone/classroom.png" width="360">
-![Search for rooms](https://github.com/cammace/iGuide/blob/master/Screenshots/phone/classroom.png)
-![View bus routes](https://github.com/cammace/iGuide/blob/master/Screenshots/phone/bus.png)
-![View details about building](https://github.com/cammace/iGuide/blob/master/Screenshots/phone/detailed_info.png)
-![Routing](https://github.com/cammace/iGuide/blob/master/Screenshots/phone/navigation.png)
-![View/Report campus issues](https://github.com/cammace/iGuide/blob/master/Screenshots/phone/campus_issues.png)
-![Drawer](https://github.com/cammace/iGuide/blob/master/Screenshots/phone/nav_drawer.png)
+<img src="https://github.com/cammace/iGuide/blob/master/Screenshots/phone/bus.png" width="360">
+<img src="https://github.com/cammace/iGuide/blob/master/Screenshots/phone/detailed_info.png" width="360">
+<img src="https://github.com/cammace/iGuide/blob/master/Screenshots/phone/navigation.png" width="360">
+<img src="https://github.com/cammace/iGuide/blob/master/Screenshots/phone/campus_issues.png" width="360">
+<img src="https://github.com/cammace/iGuide/blob/master/Screenshots/phone/nav_drawer.png">
