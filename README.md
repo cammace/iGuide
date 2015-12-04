@@ -22,4 +22,4 @@ searchable within app.
 <img src="https://github.com/cammace/iGuide/blob/master/Screenshots/phone/detailed_info.png" width="360">
 <img src="https://github.com/cammace/iGuide/blob/master/Screenshots/phone/navigation.png" width="360">
 <img src="https://github.com/cammace/iGuide/blob/master/Screenshots/phone/campus_issues.png" width="360">
-<img src="https://github.com/cammace/iGuide/blob/master/Screenshots/phone/nav_drawer.png">
+<img src="https://github.com/cammace/iGuide/blob/master/Screenshots/phone/nav_drawer.png" width="360">
