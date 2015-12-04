@@ -17,9 +17,9 @@ searchable within app.
 
 ###Screenshots
 
-![Search for rooms](https://github.com/cammace/iGuide/tree/master/Screenshots/phone/classroom.png)
-![View bus routes](https://github.com/cammace/iGuide/tree/master/Screenshots/phone/bus.png)
-![View details about building](https://github.com/cammace/iGuide/tree/master/Screenshots/phone/detailed_info.png)
-![Routing](https://github.com/cammace/iGuide/tree/master/Screenshots/phone/navigation.png)
-![View/Report campus issues](https://github.com/cammace/iGuide/tree/master/Screenshots/phone/campus_issues.png)
-![Drawer](https://github.com/cammace/iGuide/tree/master/Screenshots/phone/nav_drawer.png)
+![Search for rooms](https://github.com/cammace/iGuide/blob/master/Screenshots/phone/classroom.png)
+![View bus routes](https://github.com/cammace/iGuide/blob/master/Screenshots/phone/bus.png)
+![View details about building](https://github.com/cammace/iGuide/blob/master/Screenshots/phone/detailed_info.png)
+![Routing](https://github.com/cammace/iGuide/blob/master/Screenshots/phone/navigation.png)
+![View/Report campus issues](https://github.com/cammace/iGuide/blob/master/Screenshots/phone/campus_issues.png)
+![Drawer](https://github.com/cammace/iGuide/blob/master/Screenshots/phone/nav_drawer.png)
